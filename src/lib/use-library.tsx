@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 
 export interface LibraryMediaItem {
@@ -58,6 +59,7 @@ const LibraryContext = createContext<LibraryState | null>(null);
  * - Cache sống trong React tree, tự huỷ khi unmount (không cần TTL phức tạp).
  */
 export function LibraryProvider({ children }: { children: ReactNode }) {
+  const { status } = useSession();
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +67,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const aliveRef = useRef(true);
 
   const fetchAll = useCallback(async (withLoading: boolean) => {
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
     if (withLoading) setLoading(true);
     const res = await api.get<LibraryItem[]>("/api/library");
     if (!aliveRef.current) return;
@@ -75,11 +81,15 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setError(res.error ?? "Không tải được thư viện.");
     }
     if (withLoading) setLoading(false);
-  }, []);
+  }, [status]);
 
   const reload = useCallback(() => fetchAll(false), [fetchAll]);
 
   useEffect(() => {
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
     aliveRef.current = true;
     const rafId = requestAnimationFrame(async () => {
       if (aliveRef.current) await fetchAll(true);
@@ -88,7 +98,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       aliveRef.current = false;
       cancelAnimationFrame(rafId);
     };
-  }, [fetchAll]);
+  }, [fetchAll, status]);
 
   return (
     <LibraryContext.Provider value={{ items, loading, error, reload }}>
