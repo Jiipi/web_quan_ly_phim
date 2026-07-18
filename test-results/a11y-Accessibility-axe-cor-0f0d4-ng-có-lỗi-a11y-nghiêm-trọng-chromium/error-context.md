@@ -1,0 +1,200 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "PhimFlow" [ref=e6] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e7]
+            - generic [ref=e9]: PhimFlow
+          - navigation [ref=e10]:
+            - link "Trang chủ" [ref=e11] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Thư viện" [ref=e12] [cursor=pointer]:
+              - /url: /library
+            - link "Khám phá" [ref=e13] [cursor=pointer]:
+              - /url: /discover
+            - link "Watchlist" [ref=e14] [cursor=pointer]:
+              - /url: /watchlist
+            - link "Thống kê" [ref=e15] [cursor=pointer]:
+              - /url: /stats
+        - generic [ref=e16]:
+          - button "Thêm nhanh (Alt+N)" [ref=e17]:
+            - img [ref=e18]
+            - generic [ref=e19]: Thêm nhanh
+          - button "Mở tìm kiếm nhanh" [ref=e20]:
+            - img [ref=e21]
+            - generic [ref=e24]: Tìm nhanh...
+            - generic [ref=e25]: Ctrl K
+          - button "Thông báo" [ref=e26]:
+            - img [ref=e27]
+          - button "U" [ref=e32]:
+            - generic [ref=e33]: U
+            - img [ref=e34]
+    - main [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e43]:
+            - img [ref=e44]
+            - generic [ref=e46]: Vụng Trộm Không Thể Giấu
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]:
+                - generic [ref=e50]: Đang theo dõi
+                - generic [ref=e51]: Romance • Drama
+              - heading "Vụng Trộm Không Thể Giấu" [level=2] [ref=e52]
+              - paragraph [ref=e53]: Hidden Love
+              - paragraph [ref=e54]: Tang Trĩ từ nhỏ đã thích thầm bạn thân của anh trai cô là Đoàn Gia Hứa. Dù tuổi tác cách biệt và xa cách về địa lý, cô vẫn luôn dành trọn tình cảm cho anh. Khi Tang Trĩ lớn lên và thi đỗ đại học cùng thành phố với Đoàn Gia Hứa, họ gặp lại nhau và dần dần thắt chặt mối quan hệ ngọt ngào.
+            - generic [ref=e55]:
+              - generic [ref=e56]:
+                - generic [ref=e61]:
+                  - generic [ref=e62]: Tập 13/25
+                  - generic [ref=e63]: 52%
+                - generic [ref=e64]: Tập 13/25
+              - generic [ref=e65]:
+                - link "Chi tiết phim" [ref=e66] [cursor=pointer]:
+                  - /url: /show/114479
+                - button "Đã xem tập 14" [ref=e67]
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - heading "Tiếp tục xem dở" [level=3] [ref=e72]:
+                  - img [ref=e73]
+                  - text: Tiếp tục xem dở
+                - link "Xem tất cả (1)" [ref=e75] [cursor=pointer]:
+                  - /url: /continue-watching
+                  - text: Xem tất cả (1)
+                  - img [ref=e76]
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - generic [ref=e82]:
+                    - img [ref=e83]
+                    - generic [ref=e85]: Vụng Trộm Không Thể Giấu
+                  - generic [ref=e86]:
+                    - paragraph [ref=e87]: Hidden Love
+                    - link "Xem chi tiết →" [ref=e88] [cursor=pointer]:
+                      - /url: /show/114479
+                  - button "Tăng +1 tập phim Vụng Trộm Không Thể Giấu" [ref=e89]: "+1"
+                - generic [ref=e90]:
+                  - heading "Vụng Trộm Không Thể Giấu" [level=4] [ref=e91]
+                  - generic [ref=e92]:
+                    - generic [ref=e96]:
+                      - generic [ref=e97]: Tập 13/25
+                      - generic [ref=e98]: 52%
+                    - generic [ref=e99]:
+                      - generic [ref=e100]: Tập 13/25
+                      - generic [ref=e101]: Hôm qua
+            - generic [ref=e102]:
+              - heading "Mới thêm gần đây" [level=3] [ref=e103]:
+                - img [ref=e104]
+                - text: Mới thêm gần đây
+              - generic [ref=e106]:
+                - link "Người Dơi Người Dơi The Batman Movie 7.7" [ref=e107] [cursor=pointer]:
+                  - /url: /movie/414906
+                  - generic [ref=e110]:
+                    - img [ref=e111]
+                    - generic [ref=e113]: Người Dơi
+                  - generic [ref=e114]:
+                    - generic [ref=e115]:
+                      - heading "Người Dơi" [level=4] [ref=e116]
+                      - paragraph [ref=e117]: The Batman
+                    - generic [ref=e118]:
+                      - generic [ref=e119]: Movie
+                      - generic [ref=e121]: "7.7"
+                - link "Vụng Trộm Không Thể Giấu Vụng Trộm Không Thể Giấu Hidden Love TV Show 8.7" [ref=e122] [cursor=pointer]:
+                  - /url: /show/114479
+                  - generic [ref=e125]:
+                    - img [ref=e126]
+                    - generic [ref=e128]: Vụng Trộm Không Thể Giấu
+                  - generic [ref=e129]:
+                    - generic [ref=e130]:
+                      - heading "Vụng Trộm Không Thể Giấu" [level=4] [ref=e131]
+                      - paragraph [ref=e132]: Hidden Love
+                    - generic [ref=e133]:
+                      - generic [ref=e134]: TV Show
+                      - generic [ref=e136]: "8.7"
+                - link "Thám Tử Lừng Danh Conan Thám Tử Lừng Danh Conan Detective Conan / Case Closed TV Show 8.9" [ref=e137] [cursor=pointer]:
+                  - /url: /show/34307
+                  - generic [ref=e140]:
+                    - img [ref=e141]
+                    - generic [ref=e143]: Thám Tử Lừng Danh Conan
+                  - generic [ref=e144]:
+                    - generic [ref=e145]:
+                      - heading "Thám Tử Lừng Danh Conan" [level=4] [ref=e146]
+                      - paragraph [ref=e147]: Detective Conan / Case Closed
+                    - generic [ref=e148]:
+                      - generic [ref=e149]: TV Show
+                      - generic [ref=e151]: "8.9"
+            - generic [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e155]:
+                - heading "Mạch phim bị bỏ quên > 7 ngày!" [level=4] [ref=e156]
+                - paragraph [ref=e157]: Bạn đã lâu không cập nhật tiến độ xem Thám Tử Lừng Danh Conan (lần cuối cập nhật là 68 ngày trước). Đọc lại tóm tắt nội dung không spoil do AI tổng hợp để tiếp tục tận hưởng mạch truyện.
+                - link "AI Tóm tắt không spoil" [ref=e159] [cursor=pointer]:
+                  - /url: /ai?tab=summary&show=34307
+                  - img [ref=e160]
+                  - text: AI Tóm tắt không spoil
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - heading "Thống kê nhanh" [level=3] [ref=e164]:
+                - img [ref=e165]
+                - text: Thống kê nhanh
+              - generic [ref=e168]:
+                - generic [ref=e169]:
+                  - generic [ref=e170]: Số tập đã cày
+                  - generic [ref=e171]: "434"
+                  - generic [ref=e172]: Tập phim bộ
+                - generic [ref=e173]:
+                  - generic [ref=e174]: Đang dở dang
+                  - generic [ref=e175]: "1"
+                  - generic [ref=e176]: Phim bộ
+              - generic [ref=e177]:
+                - img [ref=e178]
+                - generic [ref=e181]:
+                  - text: "Xem xong tháng này:"
+                  - strong [ref=e182]: 0 phim
+            - generic [ref=e183]:
+              - heading "Gợi ý tối nay" [level=3] [ref=e184]:
+                - img [ref=e185]
+                - text: Gợi ý tối nay
+              - generic [ref=e188]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]:
+                    - img [ref=e192]
+                    - generic [ref=e195]: AI Gợi Ý
+                  - generic [ref=e196]: Hợp gu 77%
+                - heading "Người Dơi (The Batman)" [level=4] [ref=e197]
+                - paragraph [ref=e198]: "Phim này nằm trong Watchlist của bạn với điểm đánh giá TMDb rất tốt (7.7). Thể loại chính: Action, Crime."
+                - generic [ref=e199]:
+                  - button "Muốn xem" [ref=e201]:
+                    - img [ref=e202]
+                    - text: Muốn xem
+                  - button "Chi tiết" [ref=e203]:
+                    - text: Chi tiết
+                    - img [ref=e204]
+            - generic [ref=e206]:
+              - generic [ref=e207]:
+                - heading "Muốn xem (Watchlist)" [level=3] [ref=e208]:
+                  - img [ref=e209]
+                  - text: Muốn xem (Watchlist)
+                - link "Xem tất cả" [ref=e210] [cursor=pointer]:
+                  - /url: /watchlist
+              - generic [ref=e212]:
+                - generic [ref=e215]:
+                  - img [ref=e216]
+                  - generic [ref=e218]: Người Dơi
+                - generic [ref=e219]:
+                  - heading "Người Dơi" [level=4] [ref=e220]
+                  - paragraph [ref=e221]: The Batman
+                  - generic [ref=e223]: "7.7"
+                - button "Bắt đầu xem phim Người Dơi" [ref=e224]:
+                  - img [ref=e225]
+    - button "Thêm phim nhanh" [ref=e227]:
+      - img [ref=e228]
+  - status
+  - alert [ref=e229]: PhimFlow — Hệ điều hành xem phim cá nhân
+```

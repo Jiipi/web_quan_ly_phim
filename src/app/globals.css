@@ -1,0 +1,1563 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-tertiary: var(--tertiary);
+
+  --color-watching: var(--status-watching);
+  --color-completed: var(--status-completed);
+  --color-paused: var(--status-paused);
+  --color-dropped: var(--status-dropped);
+  --color-want-to-watch: var(--status-want-to-watch);
+  --color-favorite: var(--status-favorite);
+
+  --color-bg: var(--background);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-popover: var(--popover);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* === Animations (declared in @theme so Tailwind v4 keeps them in bundle) === */
+  --animate-drift-orb: driftOrb 18s ease-in-out infinite;
+  --animate-drift-orb-b: driftOrbB 22s ease-in-out infinite;
+  --animate-float-particle: floatParticle linear infinite;
+  --animate-float-particle-alt: floatParticleAlt linear infinite;
+  --animate-aside-scan: asideScan 6s linear infinite;
+  --animate-hud-corner-pulse: hudCornerPulse 3s ease-in-out infinite;
+  --animate-cursor-blink: cursorBlink 1s steps(2) infinite;
+  --animate-logo-breathe: logoBreathe 4s ease-in-out infinite;
+  --animate-card-entrance: cardEntrance 0.6s ease-out both;
+  --animate-card-glow-ring: cardGlowRing 4s ease-in-out infinite;
+  --animate-badge-pulse: badgePulse 2s ease-in-out infinite;
+  --animate-text-shimmer: textShimmer 4s linear infinite;
+  --animate-number-pulse: numberPulse 3s ease-in-out infinite;
+  --animate-divider-flow: dividerFlow 3s ease-in-out infinite;
+}
+
+@keyframes driftOrb {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.18;
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translate(-20px, 30px) scale(0.95);
+    opacity: 0.22;
+  }
+  75% {
+    transform: translate(20px, 10px) scale(1.05);
+    opacity: 0.3;
+  }
+}
+@keyframes driftOrbB {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.14;
+  }
+  33% {
+    transform: translate(-40px, 20px) scale(1.15);
+    opacity: 0.24;
+  }
+  66% {
+    transform: translate(30px, -30px) scale(0.9);
+    opacity: 0.18;
+  }
+}
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(20px);
+    opacity: 0;
+  }
+}
+@keyframes floatParticleAlt {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(-25px);
+    opacity: 0;
+  }
+}
+@keyframes asideScan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+@keyframes hudCornerPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cursorBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes logoBreathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.72 0.32 330 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 24px 4px oklch(0.72 0.32 330 / 0.25);
+  }
+}
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes cardGlowRing {
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: rotate(180deg);
+  }
+}
+@keyframes badgePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+@keyframes textShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+@keyframes numberPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+@keyframes dividerFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+:root {
+  /* Light mode (default root) */
+  --background: oklch(0.985 0.005 95);
+  --foreground: oklch(0.18 0.02 250);
+  --surface: oklch(1 0 0);
+  --card: oklch(0.995 0.003 95);
+  --card-hover: oklch(0.97 0.005 95);
+  --popover: oklch(1 0 0);
+  --border: oklch(0.92 0.005 250);
+  --border-hover: oklch(0.85 0.008 250);
+  --input: oklch(0.94 0.005 250);
+  --ring: oklch(0.65 0.21 18);
+
+  --text: oklch(0.18 0.02 250);
+  --text-secondary: oklch(0.42 0.02 250);
+  --text-muted: oklch(0.55 0.02 250);
+
+  /* Primary — Cinema Red */
+  --primary: oklch(0.62 0.21 18);
+  --primary-hover: oklch(0.55 0.22 18);
+  --primary-light: oklch(0.75 0.18 18);
+  --primary-dark: oklch(0.5 0.22 18);
+  --primary-foreground: oklch(0.98 0 0);
+
+  /* Secondary — Gold */
+  --secondary: oklch(0.78 0.16 75);
+  --secondary-hover: oklch(0.7 0.17 75);
+  --secondary-foreground: oklch(0.2 0.05 75);
+
+  /* Accent — Teal */
+  --accent: oklch(0.68 0.13 195);
+  --accent-hover: oklch(0.6 0.14 195);
+  --accent-foreground: oklch(0.18 0.02 250);
+
+  /* Status */
+  --status-watching: oklch(0.7 0.14 220);
+  --status-completed: oklch(0.7 0.16 145);
+  --status-paused: oklch(0.78 0.15 75);
+  --status-dropped: oklch(0.68 0.2 25);
+  --status-want-to-watch: oklch(0.7 0.18 295);
+  --status-favorite: oklch(0.72 0.18 5);
+
+  /* Destructive */
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Fonts */
+  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", "Fira Code", monospace;
+
+  /* Shadows — darker for light mode */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.14);
+}
+
+.dark {
+  /* ===== NEON CYBERPUNK / SYNTHWAVE — DARK MODE ===== */
+  /* Base — deep cyberpunk void with hint of midnight blue */
+  --background: oklch(0.13 0.04 290);
+  --foreground: oklch(0.97 0.01 290);
+  --surface: oklch(0.17 0.05 290);
+  --card: oklch(0.2 0.05 290);
+  --card-hover: oklch(0.25 0.06 290);
+  --popover: oklch(0.19 0.05 290);
+  --border: oklch(0.32 0.06 290);
+  --border-hover: oklch(0.45 0.1 290);
+  --input: oklch(0.24 0.05 290);
+  --ring: oklch(0.78 0.28 330);
+
+  --text: oklch(0.97 0.01 290);
+  --text-secondary: oklch(0.82 0.05 290);
+  --text-muted: oklch(0.6 0.05 290);
+
+  /* PRIMARY → Neon Hot Pink / Magenta */
+  --primary: oklch(0.72 0.32 330);
+  --primary-hover: oklch(0.78 0.33 330);
+  --primary-light: oklch(0.85 0.25 330);
+  --primary-dark: oklch(0.6 0.3 330);
+  --primary-foreground: oklch(0.99 0.01 330);
+
+  /* SECONDARY → Electric Cyan */
+  --secondary: oklch(0.85 0.18 200);
+  --secondary-hover: oklch(0.9 0.18 200);
+  --secondary-foreground: oklch(0.13 0.05 290);
+
+  /* ACCENT → Electric Violet / Purple */
+  --accent: oklch(0.7 0.32 290);
+  --accent-hover: oklch(0.78 0.32 290);
+  --accent-foreground: oklch(0.99 0.01 290);
+
+  /* TERTIARY → Acid Lime */
+  --tertiary: oklch(0.88 0.25 130);
+
+  /* Status — Neon tuned */
+  --status-watching: oklch(0.82 0.2 200);
+  --status-completed: oklch(0.82 0.22 145);
+  --status-paused: oklch(0.85 0.2 75);
+  --status-dropped: oklch(0.72 0.32 330);
+  --status-want-to-watch: oklch(0.75 0.3 290);
+  --status-favorite: oklch(0.78 0.32 20);
+
+  --destructive: oklch(0.72 0.3 25);
+  --destructive-foreground: oklch(0.99 0.01 25);
+
+  /* Gradients */
+  --gradient-cyber: linear-gradient(
+    135deg,
+    oklch(0.72 0.32 330) 0%,
+    oklch(0.7 0.32 290) 50%,
+    oklch(0.85 0.18 200) 100%
+  );
+  --gradient-neon: linear-gradient(135deg, oklch(0.78 0.33 330) 0%, oklch(0.7 0.32 290) 100%);
+  --gradient-synthwave: linear-gradient(
+    180deg,
+    oklch(0.7 0.32 290) 0%,
+    oklch(0.72 0.32 330) 50%,
+    oklch(0.78 0.32 25) 100%
+  );
+  --gradient-cyber-grid: linear-gradient(
+    135deg,
+    oklch(0.72 0.32 330 / 0.15) 0%,
+    oklch(0.85 0.18 200 / 0.15) 100%
+  );
+
+  /* Shadows — Deep dark base */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.8);
+
+  /* NEON GLOWS */
+  --shadow-glow-primary: 0 0 20px oklch(0.72 0.32 330 / 0.55), 0 0 40px oklch(0.72 0.32 330 / 0.3);
+  --shadow-glow-secondary:
+    0 0 20px oklch(0.85 0.18 200 / 0.5), 0 0 40px oklch(0.85 0.18 200 / 0.25);
+  --shadow-glow-accent: 0 0 20px oklch(0.7 0.32 290 / 0.55), 0 0 40px oklch(0.7 0.32 290 / 0.3);
+  --shadow-glow-tertiary: 0 0 20px oklch(0.88 0.25 130 / 0.5);
+  --shadow-neon: 0 0 5px currentColor, 0 0 15px currentColor, 0 0 25px currentColor;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 22px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Glassmorphism utilities ===== */
+.glass-card {
+  background: color-mix(in oklch, var(--surface) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--duration-normal, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  border-color: color-mix(in oklch, var(--border-hover) 70%, transparent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.glass-panel {
+  background: color-mix(in oklch, var(--surface) 50%, transparent);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  border-radius: var(--radius-xl, 24px);
+}
+
+/* Stats card with gradient top accent */
+.stats-card {
+  background: linear-gradient(180deg, var(--card) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.stats-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, oklch(0.68 0.22 18) 0%, oklch(0.82 0.16 75) 100%);
+}
+
+/* Hover lift utility */
+.hover-lift {
+  transition:
+    transform var(--duration-normal, 250ms) cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow var(--duration-normal, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--card) 50%, transparent) 25%,
+    color-mix(in oklch, var(--card-hover) 70%, transparent) 50%,
+    color-mix(in oklch, var(--card) 50%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Cinematic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 30%, transparent);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 55%, transparent);
+}
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Thin scrollbar for movie rows */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: color-mix(in oklch, var(--surface) 30%, transparent);
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--text-muted) 25%, transparent);
+  border-radius: 9999px;
+  transition: background 0.2s;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 50%, transparent);
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 oklch(0.72 0.32 330 / 0.55),
+      0 0 18px oklch(0.72 0.32 330 / 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 14px oklch(0.72 0.32 330 / 0),
+      0 0 32px oklch(0.72 0.32 330 / 0.6);
+  }
+}
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.pulse-glow-cyan {
+  animation: pulse-glow-cyan 2.4s ease-in-out infinite;
+}
+@keyframes pulse-glow-cyan {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 oklch(0.85 0.18 200 / 0.55),
+      0 0 18px oklch(0.85 0.18 200 / 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 14px oklch(0.85 0.18 200 / 0),
+      0 0 32px oklch(0.85 0.18 200 / 0.6);
+  }
+}
+
+/* Ambient spotlight background layer */
+.ambient-spotlight {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+  transition: all 0.8s ease-in-out;
+}
+
+/* Stagger children entrance */
+.stagger-children > * {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+.stagger-children > *:nth-child(7) {
+  animation-delay: 360ms;
+}
+.stagger-children > *:nth-child(8) {
+  animation-delay: 420ms;
+}
+
+/* Hero gradient animation */
+@keyframes heroGradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.animate-hero-gradient {
+  background-size: 200% 200%;
+  animation: heroGradientShift 12s ease-in-out infinite;
+}
+
+/* Star burst animation */
+@keyframes starBurst {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.4) rotate(72deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+.animate-star-burst {
+  animation: starBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Gradient text */
+.text-gradient-cinema {
+  background: linear-gradient(
+    135deg,
+    oklch(0.72 0.32 330) 0%,
+    oklch(0.7 0.32 290) 50%,
+    oklch(0.85 0.18 200) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: heroGradientShift 8s ease infinite;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, oklch(0.85 0.18 200) 0%, oklch(0.7 0.32 290) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.text-gradient-synthwave {
+  background: linear-gradient(
+    180deg,
+    oklch(0.72 0.32 330) 0%,
+    oklch(0.7 0.32 290) 50%,
+    oklch(0.78 0.32 25) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ============================================================ */
+/* ============= NEON CYBERPUNK — NEW UTILITIES ================ */
+/* ============================================================ */
+
+/* === Neon border with glow === */
+.neon-border {
+  border: 1px solid var(--primary);
+  box-shadow:
+    0 0 6px oklch(0.72 0.32 330 / 0.45),
+    0 0 14px oklch(0.72 0.32 330 / 0.3),
+    inset 0 0 6px oklch(0.72 0.32 330 / 0.18);
+}
+.neon-border-cyan {
+  border: 1px solid var(--secondary);
+  box-shadow:
+    0 0 6px oklch(0.85 0.18 200 / 0.5),
+    0 0 16px oklch(0.85 0.18 200 / 0.3),
+    inset 0 0 6px oklch(0.85 0.18 200 / 0.15);
+}
+.neon-border-accent {
+  border: 1px solid var(--accent);
+  box-shadow:
+    0 0 6px oklch(0.7 0.32 290 / 0.5),
+    0 0 16px oklch(0.7 0.32 290 / 0.3),
+    inset 0 0 6px oklch(0.7 0.32 290 / 0.15);
+}
+
+/* === Animated cyber grid background === */
+.cyber-grid {
+  position: relative;
+  isolation: isolate;
+}
+.cyber-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(oklch(0.85 0.18 200 / 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.85 0.18 200 / 0.18) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black 0%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black 0%, transparent 90%);
+  pointer-events: none;
+  z-index: 0;
+}
+.cyber-grid::after {
+  content: "";
+  position: absolute;
+  inset: -20% -10%;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, oklch(0.72 0.32 330 / 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 0% 80%, oklch(0.7 0.32 290 / 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 100% 70%, oklch(0.85 0.18 200 / 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === Cyber grid that scrolls === */
+.cyber-grid-scroll {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(oklch(0.85 0.18 200 / 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.85 0.18 200 / 0.22) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    black 30%,
+    black 80%,
+    transparent 100%
+  );
+  animation: cyberGridScroll 8s linear infinite;
+}
+@keyframes cyberGridScroll {
+  0% {
+    background-position:
+      0 0,
+      0 0;
+  }
+  100% {
+    background-position:
+      0 56px,
+      56px 0;
+  }
+}
+
+/* === Horizon glow (synthwave sun) === */
+.horizon-glow {
+  position: absolute;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    oklch(0.72 0.32 330 / 0.5) 50%,
+    oklch(0.78 0.32 25 / 0.4) 100%
+  );
+  filter: blur(2px);
+}
+
+/* === Scanlines (CRT effect) === */
+.scanlines {
+  position: relative;
+  isolation: isolate;
+}
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(255, 255, 255, 0.025) 3px,
+    transparent 4px
+  );
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+/* === Vignette dark edges === */
+.cyber-vignette {
+  position: relative;
+  isolation: isolate;
+}
+.cyber-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  z-index: 1;
+}
+
+/* === Holographic text effect === */
+.holo-text {
+  background: linear-gradient(
+    90deg,
+    oklch(0.78 0.32 25) 0%,
+    oklch(0.72 0.32 330) 20%,
+    oklch(0.7 0.32 290) 40%,
+    oklch(0.85 0.18 200) 60%,
+    oklch(0.88 0.25 130) 80%,
+    oklch(0.78 0.32 25) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: holoShift 4s linear infinite;
+  text-shadow: 0 0 24px oklch(0.72 0.32 330 / 0.35);
+}
+@keyframes holoShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* === Glitch text effect === */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.glitch::before {
+  color: oklch(0.85 0.18 200);
+  transform: translate(2px, 0);
+  mix-blend-mode: screen;
+  animation: glitchA 3.5s infinite steps(1, end);
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+}
+.glitch::after {
+  color: oklch(0.72 0.32 330);
+  transform: translate(-2px, 0);
+  mix-blend-mode: screen;
+  animation: glitchB 3.5s infinite steps(1, end);
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+}
+@keyframes glitchA {
+  0%,
+  92%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  93% {
+    transform: translate(-3px, 1px);
+    opacity: 1;
+  }
+  95% {
+    transform: translate(3px, -1px);
+    opacity: 0.8;
+  }
+  97% {
+    transform: translate(-2px, 0);
+    opacity: 0.6;
+  }
+  99% {
+    transform: translate(2px, 0);
+    opacity: 0;
+  }
+}
+@keyframes glitchB {
+  0%,
+  92%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  93% {
+    transform: translate(3px, -1px);
+    opacity: 1;
+  }
+  95% {
+    transform: translate(-3px, 1px);
+    opacity: 0.8;
+  }
+  97% {
+    transform: translate(2px, 0);
+    opacity: 0.6;
+  }
+  99% {
+    transform: translate(2px, 0);
+    opacity: 0;
+  }
+}
+
+/* === Scan line that moves vertically (radar) === */
+@keyframes scanLine {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+.cyber-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.cyber-scan::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.85 0.18 200 / 0.6) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px oklch(0.85 0.18 200 / 0.6);
+  animation: scanLine 6s ease-in-out infinite;
+}
+
+/* === Aside panel scanline sweep (horizontal) === */
+@keyframes asideScan {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+.aside-scan-beam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+.aside-scan-beam::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.72 0.32 330 / 0.12) 40%,
+    oklch(0.85 0.18 200 / 0.08) 60%,
+    transparent 100%
+  );
+  animation-name: asideScan;
+  animation-duration: 6s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* === Floating particles === */
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(20px) scale(0.5);
+    opacity: 0;
+  }
+}
+@keyframes floatParticleAlt {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-80vh) translateX(-30px) scale(0.3);
+    opacity: 0;
+  }
+}
+.aside-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.aside-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: floatParticle;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.aside-particle-alt {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: floatParticleAlt;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* === Ambient drifting orbs === */
+@keyframes driftOrb {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.18;
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translate(-15px, -40px) scale(0.95);
+    opacity: 0.2;
+  }
+  75% {
+    transform: translate(20px, -15px) scale(1.05);
+    opacity: 0.25;
+  }
+}
+@keyframes driftOrbB {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.15;
+  }
+  33% {
+    transform: translate(-25px, 15px) scale(1.08);
+    opacity: 0.22;
+  }
+  66% {
+    transform: translate(15px, 25px) scale(0.92);
+    opacity: 0.18;
+  }
+}
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  animation-name: driftOrb;
+  animation-duration: 18s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+.ambient-orb-b {
+  animation-name: driftOrbB;
+  animation-duration: 22s;
+}
+
+/* === HUD corner brackets === */
+@keyframes hudCornerPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    filter: drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.4));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px oklch(0.72 0.32 330 / 0.9))
+      drop-shadow(0 0 20px oklch(0.72 0.32 330 / 0.5));
+  }
+}
+.hud-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  animation-name: hudCornerPulse;
+  animation-duration: 2.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.hud-corner-tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid oklch(0.72 0.32 330);
+  border-left: 2px solid oklch(0.72 0.32 330);
+}
+.hud-corner-tr {
+  top: 0;
+  right: 0;
+  border-top: 2px solid oklch(0.85 0.18 200);
+  border-right: 2px solid oklch(0.85 0.18 200);
+}
+.hud-corner-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid oklch(0.7 0.32 290);
+  border-left: 2px solid oklch(0.7 0.32 290);
+}
+.hud-corner-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid oklch(0.72 0.32 330);
+  border-right: 2px solid oklch(0.72 0.32 330);
+}
+
+/* === Typing cursor blink === */
+@keyframes cursorBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.typing-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 10px;
+  background-color: oklch(0.72 0.32 330);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation-name: cursorBlink;
+  animation-duration: 1s;
+  animation-timing-function: steps(2);
+  animation-iteration-count: infinite;
+  box-shadow: 0 0 6px oklch(0.72 0.32 330 / 0.8);
+}
+
+/* === Logo breathing glow === */
+@keyframes logoBreathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 6px oklch(0.72 0.32 330 / 0.45),
+      0 0 14px oklch(0.72 0.32 330 / 0.3),
+      inset 0 0 6px oklch(0.72 0.32 330 / 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 10px oklch(0.72 0.32 330 / 0.7),
+      0 0 28px oklch(0.72 0.32 330 / 0.5),
+      0 0 40px oklch(0.72 0.32 330 / 0.2),
+      inset 0 0 10px oklch(0.72 0.32 330 / 0.3);
+  }
+}
+.logo-breathe {
+  animation-name: logoBreathe;
+  animation-duration: 4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* === Card staggered entrance === */
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.card-entrance {
+  opacity: 0;
+  animation-name: cardEntrance;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+.card-entrance-1 {
+  animation-delay: 0.1s;
+}
+.card-entrance-2 {
+  animation-delay: 0.25s;
+}
+.card-entrance-3 {
+  animation-delay: 0.4s;
+}
+.card-entrance-4 {
+  animation-delay: 0.55s;
+}
+
+/* === Card hover lift with glow ring === */
+@keyframes cardGlowRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.card-glow-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, oklch(0.72 0.32 330), oklch(0.85 0.18 200));
+  opacity: 0;
+  z-index: -1;
+  filter: blur(8px);
+  transition: opacity 0.3s ease;
+}
+.highlight-card {
+  position: relative;
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.highlight-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: oklch(0.72 0.32 330 / 0.7);
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 0.4),
+    0 0 24px oklch(0.72 0.32 330 / 0.2),
+    inset 0 0 12px oklch(0.72 0.32 330 / 0.06);
+}
+.highlight-card:hover .card-glow-ring {
+  opacity: 1;
+  animation-name: cardGlowRing;
+  animation-duration: 4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* === Badge blinking with wave === */
+@keyframes badgePulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    text-shadow: 0 0 4px oklch(0.72 0.32 330 / 0.4);
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 10px oklch(0.72 0.32 330 / 0.9),
+      0 0 20px oklch(0.72 0.32 330 / 0.4);
+  }
+}
+.badge-pulse {
+  animation-name: badgePulse;
+  animation-duration: 2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* === Text shimmer on heading === */
+@keyframes textShimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.heading-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.72 0.32 330) 0%,
+    oklch(0.85 0.18 200) 25%,
+    oklch(0.7 0.32 290) 50%,
+    oklch(0.85 0.18 200) 75%,
+    oklch(0.72 0.32 330) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation-name: textShimmer;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* === Number counter pulse === */
+@keyframes numberPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.15);
+  }
+}
+.number-badge {
+  transition:
+    color 0.2s ease,
+    text-shadow 0.2s ease;
+}
+.highlight-card:hover .number-badge {
+  color: oklch(0.72 0.32 330);
+  animation-name: numberPulse;
+  animation-duration: 3s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  text-shadow: 0 0 8px oklch(0.72 0.32 330 / 0.8);
+}
+
+/* === Gradient divider line animate === */
+@keyframes dividerFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+.divider-flow {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.72 0.32 330 / 0.5) 25%,
+    oklch(0.85 0.18 200 / 0.7) 50%,
+    oklch(0.72 0.32 330 / 0.5) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation-name: dividerFlow;
+  animation-duration: 3s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* === Aside wrapper with corner HUD === */
+.aside-hud {
+  position: relative;
+  isolation: isolate;
+}
+.aside-hud::before,
+.aside-hud::after {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 10;
+  animation-name: hudCornerPulse;
+  animation-duration: 3s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.aside-hud::before {
+  top: 16px;
+  left: 16px;
+  border-top: 2px solid oklch(0.72 0.32 330 / 0.6);
+  border-left: 2px solid oklch(0.72 0.32 330 / 0.6);
+  box-shadow: -4px -4px 12px oklch(0.72 0.32 330 / 0.2);
+}
+.aside-hud::after {
+  bottom: 16px;
+  right: 16px;
+  border-bottom: 2px solid oklch(0.85 0.18 200 / 0.6);
+  border-right: 2px solid oklch(0.85 0.18 200 / 0.6);
+  box-shadow: 4px 4px 12px oklch(0.85 0.18 200 / 0.2);
+}
+
+/* === Neon corner brackets (cyberpunk HUD) === */
+.neon-corners {
+  position: relative;
+}
+.neon-corners::before,
+.neon-corners::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--primary);
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px var(--primary)) drop-shadow(0 0 8px oklch(0.72 0.32 330 / 0.5));
+}
+.neon-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.neon-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* === Floating particles === */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-120vh) translateX(20px);
+    opacity: 0;
+  }
+}
+.particle {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  animation: floatUp linear infinite;
+}
+
+/* === Strong neon button glow === */
+.btn-neon {
+  position: relative;
+  border: 1px solid var(--primary);
+  background: linear-gradient(135deg, oklch(0.72 0.32 330 / 0.18), oklch(0.7 0.32 290 / 0.18));
+  color: var(--primary);
+  transition: all 0.25s ease;
+  box-shadow:
+    0 0 8px oklch(0.72 0.32 330 / 0.4),
+    inset 0 0 8px oklch(0.72 0.32 330 / 0.18);
+}
+.btn-neon:hover {
+  background: linear-gradient(135deg, oklch(0.72 0.32 330 / 0.32), oklch(0.7 0.32 290 / 0.32));
+  box-shadow:
+    0 0 12px oklch(0.72 0.32 330 / 0.7),
+    0 0 28px oklch(0.72 0.32 330 / 0.4),
+    inset 0 0 12px oklch(0.72 0.32 330 / 0.3);
+  transform: translateY(-1px);
+}
+.btn-neon-cyan {
+  border-color: var(--secondary);
+  background: linear-gradient(135deg, oklch(0.85 0.18 200 / 0.18), oklch(0.7 0.32 290 / 0.18));
+  color: var(--secondary);
+  box-shadow:
+    0 0 8px oklch(0.85 0.18 200 / 0.4),
+    inset 0 0 8px oklch(0.85 0.18 200 / 0.18);
+}
+.btn-neon-cyan:hover {
+  background: linear-gradient(135deg, oklch(0.85 0.18 200 / 0.32), oklch(0.7 0.32 290 / 0.32));
+  box-shadow:
+    0 0 12px oklch(0.85 0.18 200 / 0.7),
+    0 0 28px oklch(0.85 0.18 200 / 0.4),
+    inset 0 0 12px oklch(0.85 0.18 200 / 0.3);
+}
+
+/* === Cyber panel (deep glass with neon edge) === */
+.cyber-panel {
+  background: linear-gradient(135deg, oklch(0.17 0.05 290 / 0.85), oklch(0.13 0.04 290 / 0.85));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(0.72 0.32 330 / 0.4);
+  box-shadow:
+    0 0 0 1px oklch(0.85 0.18 200 / 0.08),
+    0 0 32px oklch(0.72 0.32 330 / 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-lg);
+}
+.cyber-panel-strong {
+  background: linear-gradient(135deg, oklch(0.17 0.05 290 / 0.95), oklch(0.13 0.04 290 / 0.95));
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid oklch(0.85 0.18 200 / 0.5);
+  box-shadow:
+    0 0 0 1px oklch(0.72 0.32 330 / 0.2),
+    0 0 40px oklch(0.85 0.18 200 / 0.2),
+    0 12px 40px rgba(0, 0, 0, 0.6);
+  border-radius: var(--radius-xl);
+}
+
+/* === Glow text === */
+.glow-text {
+  color: var(--primary);
+  text-shadow:
+    0 0 8px oklch(0.72 0.32 330 / 0.7),
+    0 0 16px oklch(0.72 0.32 330 / 0.4);
+}
+.glow-text-cyan {
+  color: var(--secondary);
+  text-shadow:
+    0 0 8px oklch(0.85 0.18 200 / 0.7),
+    0 0 16px oklch(0.85 0.18 200 / 0.4);
+}
+.glow-text-purple {
+  color: var(--accent);
+  text-shadow:
+    0 0 8px oklch(0.7 0.32 290 / 0.7),
+    0 0 16px oklch(0.7 0.32 290 / 0.4);
+}

@@ -1,0 +1,414 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// AUTH & USER SYSTEM (NextAuth Compatibility)
+// ==========================================
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?   // For email/password login
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // PhimFlow specific relations
+  preferences   UserPreference?
+  watchItems    WatchItem[]
+  customLists   CustomList[]
+  watchSessions WatchSession[]
+  ratings       Rating[]
+  reviews       Review[]
+  tags          Tag[]
+  reminders     Reminder[]
+  tasteProfile  TasteProfile?
+  auditLogs     AuditLog[]
+}
+
+model Account {
+  id                 String    @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   @db.Text
+  access_token       String?   @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?   @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// USER PREFERENCES & GU PHIM
+// ==========================================
+
+model UserPreference {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  theme          String   @default("dark") // dark is default
+  language       String   @default("vi")
+  ratingScale    String   @default("10") // "5" (stars), "10" (decimal), "100" (percentage)
+  favGenres      String[] // List of genre names or IDs
+  favCountries   String[] // List of country codes (e.g. VN, KR, CN)
+  preferTvShows  Boolean  @default(false)
+  enableAiMood   Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// MEDIA METADATA (Sync from TMDb)
+// ==========================================
+
+model MediaItem {
+  id            String   @id @default(uuid())
+  tmdbId        Int      @unique // Unique ID from TMDb
+  mediaType     String   // "movie" | "tv"
+  title         String   // Native or translation title
+  originalTitle String
+  tagline       String?
+  overview      String?  @db.Text
+  posterPath    String?
+  backdropPath  String?
+  releaseDate   DateTime?
+  runtime       Int?     // For movies in minutes, for TV typical episode runtime
+  genres        String[] // ["Romance", "Mystery", "Anime"]
+  countries     String[] // ["CN", "KR", "JP"]
+  directors     String[]
+  actors        String[] // Main cast
+  trailerUrl    String?  // YouTube link
+  tmdbRating    Float    @default(0.0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  watchItems    WatchItem[]
+  listItems     ListItem[]
+}
+
+// ==========================================
+// LIBRARY & WATCHLIST
+// ==========================================
+
+model WatchItem {
+  id             String    @id @default(uuid())
+  userId         String
+  mediaItemId    String
+  status         String    // "want_to_watch" | "watching" | "paused" | "completed" | "dropped"
+  personalScore  Float?    // Out of 10
+  notes          String?   @db.Text
+  favorite       Boolean   @default(false)
+  priority       Int       @default(0) // Ưu tiên trong watchlist (cao hơn = ưu tiên hơn; dùng cho sort)
+  
+  // TV show specific progress
+  currentSeason  Int       @default(1)
+  currentEpisode Int       @default(0)
+  totalEpisodes  Int       @default(0) // Cache total episodes from TMDb
+  
+  startedAt      DateTime?
+  completedAt    DateTime?
+  lastWatchedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaItem      MediaItem      @relation(fields: [mediaItemId], references: [id], onDelete: Cascade)
+  progress       WatchProgress[]
+  sources        MediaSource[]
+  tags           MediaTag[]
+  ratings        Rating[]
+  reviews        Review[]
+  reminders      Reminder[]
+  dropReason     DropReason?
+
+  @@unique([userId, mediaItemId])
+}
+
+// ==========================================
+// TV SHOW EPISODE PROGRESS
+// ==========================================
+
+model WatchProgress {
+  id            String    @id @default(uuid())
+  watchItemId   String
+  seasonNumber  Int       @default(1)
+  episodeNumber Int
+  watchedAt     DateTime  @default(now())
+  note          String?   @db.Text // Custom note for this specific episode
+
+  watchItem     WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+
+  @@unique([watchItemId, seasonNumber, episodeNumber])
+}
+
+// ==========================================
+// DIARY & HISTORY TIMELINE
+// ==========================================
+
+model WatchSession {
+  id            String    @id @default(uuid())
+  userId        String
+  watchItemId   String
+  mediaType     String    // "movie" | "tv"
+  watchedAt     DateTime  @default(now())
+  seasonNumber  Int?      // For TV shows
+  episodeNumber Int?      // For TV shows
+  minutesWatched Int?     // Duration of this session
+  note          String?   @db.Text
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, watchedAt])
+}
+
+// ==========================================
+// DETAILED CRITERIA RATING
+// ==========================================
+
+model Rating {
+  id            String    @id @default(uuid())
+  userId        String
+  watchItemId   String
+  overallScore  Float     // 1 to 10
+  plotScore     Float?    // 1 to 10
+  actingScore   Float?    // 1 to 10
+  emotionScore  Float?    // 1 to 10
+  pacingScore   Float?    // 1 to 10
+  musicScore    Float?    // 1 to 10
+  endingScore   Float?    // 1 to 10
+  rewatchValue  Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  watchItem     WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, watchItemId])
+}
+
+// ==========================================
+// REVIEWS
+// ==========================================
+
+model Review {
+  id            String    @id @default(uuid())
+  userId        String
+  watchItemId   String
+  content       String    @db.Text
+  spoilers      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  watchItem     WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, watchItemId])
+}
+
+// ==========================================
+// CUSTOM TAGS & CATEGORIES
+// ==========================================
+
+model Tag {
+  id        String     @id @default(uuid())
+  userId    String
+  name      String     // e.g. "Chemistry tốt", "Đầu voi đuôi chuột", "Xem cày đêm"
+  color     String     @default("#DC2626") // default primary red hex
+  createdAt DateTime   @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaTags MediaTag[]
+
+  @@unique([userId, name])
+}
+
+// Junction table for WatchItem <-> Tag
+model MediaTag {
+  watchItemId String
+  tagId       String
+
+  watchItem   WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([watchItemId, tagId])
+}
+
+// ==========================================
+// CUSTOM LISTS & COLLECTIONS
+// ==========================================
+
+model CustomList {
+  id          String     @id @default(uuid())
+  userId      String
+  name        String
+  description String?    @db.Text
+  isPublic    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       ListItem[]
+
+  @@unique([userId, name])
+}
+
+// Junction table for CustomList <-> MediaItem
+model ListItem {
+  id           String     @id @default(uuid())
+  customListId String
+  mediaItemId  String
+  addedAt      DateTime   @default(now())
+  position     Int        @default(0) // Drag-and-drop sort order
+
+  customList   CustomList @relation(fields: [customListId], references: [id], onDelete: Cascade)
+  mediaItem    MediaItem  @relation(fields: [mediaItemId], references: [id], onDelete: Cascade)
+
+  @@unique([customListId, mediaItemId])
+}
+
+// ==========================================
+// WATCH SOURCES & PLATFORMS
+// ==========================================
+
+model Platform {
+  id        String   @id @default(uuid())
+  name      String   @unique // Netflix, VieON, iQIYI, WeTV, Bilibili, Disney+, FPT Play, Local File, Khác
+  iconUrl   String?
+  createdAt DateTime @default(now())
+
+  sources   MediaSource[]
+}
+
+model MediaSource {
+  id           String    @id @default(uuid())
+  watchItemId  String
+  platformName String    // Links to Platform name
+  watchUrl     String?   @db.Text // Direct streaming url if any
+  hasVietSub   Boolean   @default(true)
+  quality      String?   // "1080p", "4K", etc.
+  hasAds       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  watchItem    WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+  platform     Platform  @relation(fields: [platformName], references: [name], onDelete: Cascade)
+}
+
+// ==========================================
+// AI MODULES
+// ==========================================
+
+model AIRecommendation {
+  id          String   @id @default(uuid())
+  userId      String
+  query       String?  @db.Text // The prompt or mood query
+  response    Json     // Detailed recommendations structure from AI
+  createdAt   DateTime @default(now())
+}
+
+model AISummary {
+  id             String   @id @default(uuid())
+  watchItemId    String   @unique
+  episodeNumber  Int      // Up to which episode this summary covers
+  summaryText    String   @db.Text
+  charactersInfo String?  @db.Text
+  conflictsInfo  String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TasteProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  profileText    String   @db.Text // AI description of movie taste
+  visualData     Json     // JSON representation of stats charts
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// REMINDERS & NOTIFICATIONS
+// ==========================================
+
+model Reminder {
+  id          String   @id @default(uuid())
+  userId      String
+  watchItemId String
+  remindAt    DateTime
+  message     String   @db.Text
+  status      String   @default("scheduled") // "scheduled" | "sent" | "dismissed"
+  createdAt   DateTime @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  watchItem   WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+
+  @@index([remindAt])
+}
+
+// ==========================================
+// STATISTICS / METRICS
+// ==========================================
+
+model DropReason {
+  watchItemId String   @id
+  reason      String   // "Chán", "Dài dòng", "Không hợp gu", "Bị spoil", "Không có thời gian", "Diễn xuất kém", etc.
+  details     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  watchItem   WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// SECURITY AUDIT LOGGING
+// ==========================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // e.g. "auth.login", "watchitem.create", "ai.recommend"
+  ipAddress String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}

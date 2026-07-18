@@ -1,0 +1,161 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "PhimFlow" [ref=e6] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e7]
+            - generic [ref=e9]: PhimFlow
+          - navigation [ref=e10]:
+            - link "Trang chủ" [ref=e11] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Thư viện" [ref=e12] [cursor=pointer]:
+              - /url: /library
+            - link "Khám phá" [ref=e13] [cursor=pointer]:
+              - /url: /discover
+            - link "Watchlist" [ref=e14] [cursor=pointer]:
+              - /url: /watchlist
+            - link "Thống kê" [ref=e15] [cursor=pointer]:
+              - /url: /stats
+        - generic [ref=e16]:
+          - button "Thêm nhanh (Alt+N)" [ref=e17]:
+            - img [ref=e18]
+            - generic [ref=e19]: Thêm nhanh
+          - button "Mở tìm kiếm nhanh" [ref=e20]:
+            - img [ref=e21]
+            - generic [ref=e24]: Tìm nhanh...
+            - generic [ref=e25]: Ctrl K
+          - button "Thông báo" [ref=e26]:
+            - img [ref=e27]
+          - button "N" [ref=e32]:
+            - generic [ref=e33]: "N"
+            - img [ref=e34]
+    - main [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e41]:
+          - img "The Acolyte" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]: Phim bộ
+              - generic [ref=e48]: Đang xem
+              - generic [ref=e49]:
+                - img [ref=e50]
+                - text: "5.4"
+            - generic [ref=e52]:
+              - heading "The Acolyte" [level=1] [ref=e53]
+              - paragraph [ref=e54]: The Acolyte
+            - paragraph [ref=e55]: Chưa có mô tả.
+            - generic [ref=e56]:
+              - generic [ref=e57]: "Thể loại: Phim Bí Ẩn, Sci-Fi & Fantasy, Action & Adventure"
+              - generic [ref=e58]: "Quốc gia: Mỹ"
+            - paragraph [ref=e59]: "Diễn viên: Amandla Stenberg, 이정재"
+            - generic [ref=e61]:
+              - text: "Trạng thái:"
+              - combobox "Đổi trạng thái xem" [ref=e62]:
+                - option "Muốn xem"
+                - option "Đang xem" [selected]
+                - option "Tạm dừng"
+                - option "Đã xong"
+                - option "Bỏ ngang"
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - heading "Tiến độ tập" [level=2] [ref=e65]
+            - generic [ref=e66]: 13/8
+          - generic [ref=e70]:
+            - generic [ref=e71]: Tập 13/8
+            - generic [ref=e72]: 100%
+          - generic [ref=e73]:
+            - button "Đánh dấu đã xem tới tập 1" [pressed] [ref=e74]:
+              - img [ref=e75]
+            - button "Đánh dấu đã xem tới tập 2" [pressed] [ref=e77]:
+              - img [ref=e78]
+            - button "Đánh dấu đã xem tới tập 3" [pressed] [ref=e80]:
+              - img [ref=e81]
+            - button "Đánh dấu đã xem tới tập 4" [pressed] [ref=e83]:
+              - img [ref=e84]
+            - button "Đánh dấu đã xem tới tập 5" [pressed] [ref=e86]:
+              - img [ref=e87]
+            - button "Đánh dấu đã xem tới tập 6" [pressed] [ref=e89]:
+              - img [ref=e90]
+            - button "Đánh dấu đã xem tới tập 7" [pressed] [ref=e92]:
+              - img [ref=e93]
+            - button "Đánh dấu đã xem tới tập 8" [pressed] [ref=e95]:
+              - img [ref=e96]
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - heading "Đánh giá của bạn" [level=2] [ref=e100]
+            - generic [ref=e101]:
+              - generic [ref=e102]:
+                - img [ref=e103]
+                - img [ref=e105]
+                - img [ref=e107]
+                - img [ref=e109]
+                - generic [ref=e111]:
+                  - img [ref=e112]
+                  - img [ref=e115]
+              - generic [ref=e117]: "8.5"
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - generic [ref=e120]: Điểm tổng
+              - generic [ref=e121]: 8.5/10
+            - slider "Điểm tổng 8.5/10" [ref=e122] [cursor=pointer]: "9"
+          - generic [ref=e123]:
+            - checkbox "Chấm điểm chi tiết theo khía cạnh" [checked] [ref=e124]
+            - text: Chấm điểm chi tiết theo khía cạnh
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e128]: Kịch bản
+                - generic [ref=e129]: 8/10
+              - slider "Kịch bản 8/10" [ref=e130] [cursor=pointer]: "8"
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - generic [ref=e133]: Diễn xuất
+                - generic [ref=e134]: 9/10
+              - slider "Diễn xuất 9/10" [ref=e135] [cursor=pointer]: "9"
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - generic [ref=e138]: Cảm xúc
+                - generic [ref=e139]: 9/10
+              - slider "Cảm xúc 9/10" [ref=e140] [cursor=pointer]: "9"
+            - generic [ref=e141]:
+              - generic [ref=e142]:
+                - generic [ref=e143]: Nhịp phim
+                - generic [ref=e144]: 8/10
+              - slider "Nhịp phim 8/10" [ref=e145] [cursor=pointer]: "8"
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - generic [ref=e148]: Âm nhạc
+                - generic [ref=e149]: 8/10
+              - slider "Âm nhạc 8/10" [ref=e150] [cursor=pointer]: "8"
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - generic [ref=e153]: Kết thúc
+                - generic [ref=e154]: 8/10
+              - slider "Kết thúc 8/10" [ref=e155] [cursor=pointer]: "8"
+          - generic [ref=e156]:
+            - checkbox "Đáng xem lại" [ref=e157]
+            - img [ref=e158]
+            - text: Đáng xem lại
+          - button "Lưu đánh giá" [ref=e160]
+          - generic [ref=e161]:
+            - generic [ref=e162]: Review / Cảm nhận
+            - textbox "Review / Cảm nhận" [ref=e163]:
+              - /placeholder: Viết cảm nhận của bạn về phim này...
+              - text: Ngôn tình thanh xuân đáng xem nhất năm, cày một mạch.
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - checkbox "Có tiết lộ nội dung (spoiler)" [ref=e166]
+                - text: Có tiết lộ nội dung (spoiler)
+              - button "Lưu review" [ref=e167]
+        - link "← Về thư viện" [ref=e168] [cursor=pointer]:
+          - /url: /library
+    - button "Thêm phim nhanh" [ref=e169]:
+      - img [ref=e170]
+  - status
+  - alert [ref=e171]
+```

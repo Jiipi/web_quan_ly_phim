@@ -1,0 +1,111 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "PhimFlow" [ref=e6] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e7]
+            - generic [ref=e9]: PhimFlow
+          - navigation [ref=e10]:
+            - link "Trang chủ" [ref=e11] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Thư viện" [ref=e12] [cursor=pointer]:
+              - /url: /library
+            - link "Khám phá" [ref=e13] [cursor=pointer]:
+              - /url: /discover
+            - link "Watchlist" [ref=e14] [cursor=pointer]:
+              - /url: /watchlist
+            - link "Thống kê" [ref=e15] [cursor=pointer]:
+              - /url: /stats
+        - generic [ref=e16]:
+          - button "Thêm nhanh (Alt+N)" [ref=e17]:
+            - img [ref=e18]
+            - generic [ref=e19]: Thêm nhanh
+          - button "Mở tìm kiếm nhanh" [ref=e20]:
+            - img [ref=e21]
+            - generic [ref=e24]: Tìm nhanh...
+            - generic [ref=e25]: Ctrl K
+          - button "Thông báo" [ref=e26]:
+            - img [ref=e27]
+          - button "N" [ref=e32]:
+            - generic [ref=e33]: "N"
+            - img [ref=e34]
+    - main [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - heading "Thư viện của tôi" [level=1] [ref=e41]
+            - paragraph [ref=e42]: Quản lý và lọc toàn bộ phim lẻ & phim bộ của bạn.
+          - generic [ref=e43]:
+            - button "Xem dạng lưới" [pressed] [ref=e44]:
+              - img [ref=e45]
+            - button "Xem dạng danh sách" [ref=e50]:
+              - img [ref=e51]
+            - button "Xem dạng bảng" [ref=e52]:
+              - img [ref=e53]
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - img [ref=e57]
+            - textbox "Tìm phim trong thư viện" [ref=e60]:
+              - /placeholder: Tìm phim trong thư viện...
+          - button "Bộ lọc" [ref=e61]:
+            - img [ref=e62]
+            - text: Bộ lọc
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - generic [ref=e67]:
+                - img [ref=e68]
+                - generic [ref=e70]: Người Dơi
+              - generic [ref=e72]: Muốn xem
+              - button "Xoá Người Dơi khỏi thư viện" [ref=e73]:
+                - img [ref=e74]
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - heading "Người Dơi" [level=3] [ref=e79]
+                - paragraph [ref=e80]: The Batman
+                - paragraph [ref=e81]: Mỹ • Action, Crime, Mystery, Thriller
+              - generic [ref=e82]:
+                - generic [ref=e84]: "9.0"
+                - generic [ref=e85]: Phim lẻ
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e89]:
+                - img [ref=e90]
+                - generic [ref=e92]: Vụng Trộm Không Thể Giấu
+              - generic [ref=e94]: Đang xem
+              - button "Xoá Vụng Trộm Không Thể Giấu khỏi thư viện" [ref=e95]:
+                - img [ref=e96]
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - heading "Vụng Trộm Không Thể Giấu" [level=3] [ref=e101]
+                - paragraph [ref=e102]: Hidden Love
+                - paragraph [ref=e103]: Trung Quốc • Romance, Drama
+              - generic [ref=e107]:
+                - generic [ref=e109]: "8.5"
+                - generic [ref=e110]: Ep 13/25
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - generic [ref=e114]:
+                - img [ref=e115]
+                - generic [ref=e117]: Thám Tử Lừng Danh Conan
+              - generic [ref=e119]: Tạm dừng
+              - button "Xoá Thám Tử Lừng Danh Conan khỏi thư viện" [ref=e120]:
+                - img [ref=e121]
+            - generic [ref=e124]:
+              - generic [ref=e125]:
+                - heading "Thám Tử Lừng Danh Conan" [level=3] [ref=e126]
+                - paragraph [ref=e127]: Detective Conan / Case Closed
+                - paragraph [ref=e128]: Nhật Bản • Animation, Mystery, Comedy
+              - generic [ref=e132]:
+                - generic [ref=e134]: "9.0"
+                - generic [ref=e135]: Ep 421/1100
+    - button "Thêm phim nhanh" [ref=e136]:
+      - img [ref=e137]
+  - status
+  - alert [ref=e138]
+```
