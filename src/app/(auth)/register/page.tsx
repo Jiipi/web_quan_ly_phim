@@ -4,7 +4,7 @@ import { Film, Sparkles, Tv, ListPlus, Terminal } from "lucide-react";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-  title: "Đăng ký — PhimFlow",
+  title: "Đăng ký — CineOS",
 };
 
 const HIGHLIGHTS = [
@@ -23,22 +23,18 @@ export default function RegisterPage() {
           <div
             className="ambient-orb"
             style={{
-              width: 300,
-              height: 300,
+              width: 300, height: 300,
               background: "radial-gradient(circle, oklch(0.7 0.32 290 / 0.5) 0%, transparent 70%)",
-              top: "5%",
-              right: "-5%",
+              top: "5%", right: "-5%",
               animationDuration: "14s",
             }}
           />
           <div
             className="ambient-orb-b"
             style={{
-              width: 260,
-              height: 260,
+              width: 260, height: 260,
               background: "radial-gradient(circle, oklch(0.85 0.18 200 / 0.4) 0%, transparent 70%)",
-              bottom: "20%",
-              left: "0%",
+              bottom: "20%", left: "0%",
               animationDuration: "16s",
               animationDelay: "-5s",
             }}
@@ -46,12 +42,9 @@ export default function RegisterPage() {
           <div
             className="ambient-orb"
             style={{
-              width: 200,
-              height: 200,
-              background:
-                "radial-gradient(circle, oklch(0.72 0.32 330 / 0.45) 0%, transparent 70%)",
-              top: "40%",
-              left: "40%",
+              width: 200, height: 200,
+              background: "radial-gradient(circle, oklch(0.72 0.32 330 / 0.45) 0%, transparent 70%)",
+              top: "40%", left: "40%",
               animationDuration: "20s",
               animationDelay: "-10s",
             }}
@@ -76,8 +69,10 @@ export default function RegisterPage() {
             backgroundImage:
               "linear-gradient(oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px), linear-gradient(90deg, oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
-            maskImage: "linear-gradient(180deg, black 0%, transparent 70%)",
-            WebkitMaskImage: "linear-gradient(180deg, black 0%, transparent 70%)",
+            maskImage:
+              "linear-gradient(180deg, black 0%, transparent 70%)",
+            WebkitMaskImage:
+              "linear-gradient(180deg, black 0%, transparent 70%)",
           }}
         />
 
@@ -96,102 +91,14 @@ export default function RegisterPage() {
 
         {/* Floating particles */}
         <div aria-hidden="true" className="aside-particles">
-          <div
-            className="aside-particle"
-            style={{
-              width: 3,
-              height: 3,
-              background: "oklch(0.7 0.32 290 / 0.7)",
-              left: "20%",
-              bottom: "15%",
-              animationDuration: "9s",
-              animationDelay: "0s",
-            }}
-          />
-          <div
-            className="aside-particle-alt"
-            style={{
-              width: 2,
-              height: 2,
-              background: "oklch(0.85 0.18 200 / 0.6)",
-              left: "50%",
-              bottom: "8%",
-              animationDuration: "11s",
-              animationDelay: "-3s",
-            }}
-          />
-          <div
-            className="aside-particle"
-            style={{
-              width: 4,
-              height: 4,
-              background: "oklch(0.72 0.32 330 / 0.5)",
-              left: "75%",
-              bottom: "30%",
-              animationDuration: "13s",
-              animationDelay: "-5s",
-            }}
-          />
-          <div
-            className="aside-particle-alt"
-            style={{
-              width: 2,
-              height: 2,
-              background: "oklch(0.7 0.32 290 / 0.6)",
-              left: "30%",
-              bottom: "45%",
-              animationDuration: "10s",
-              animationDelay: "-7s",
-            }}
-          />
-          <div
-            className="aside-particle"
-            style={{
-              width: 3,
-              height: 3,
-              background: "oklch(0.85 0.18 200 / 0.7)",
-              left: "88%",
-              bottom: "20%",
-              animationDuration: "12s",
-              animationDelay: "-1s",
-            }}
-          />
-          <div
-            className="aside-particle-alt"
-            style={{
-              width: 2,
-              height: 2,
-              background: "oklch(0.72 0.32 330 / 0.5)",
-              left: "60%",
-              bottom: "40%",
-              animationDuration: "8s",
-              animationDelay: "-4s",
-            }}
-          />
-          <div
-            className="aside-particle"
-            style={{
-              width: 1,
-              height: 1,
-              background: "oklch(0.7 0.32 290 / 0.9)",
-              left: "12%",
-              bottom: "55%",
-              animationDuration: "15s",
-              animationDelay: "-6s",
-            }}
-          />
-          <div
-            className="aside-particle-alt"
-            style={{
-              width: 3,
-              height: 3,
-              background: "oklch(0.85 0.18 200 / 0.6)",
-              left: "65%",
-              bottom: "5%",
-              animationDuration: "14s",
-              animationDelay: "-8s",
-            }}
-          />
+          <div className="aside-particle" style={{ width: 3, height: 3, background: "oklch(0.7 0.32 290 / 0.7)", left: "20%", bottom: "15%", animationDuration: "9s", animationDelay: "0s" }} />
+          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.85 0.18 200 / 0.6)", left: "50%", bottom: "8%", animationDuration: "11s", animationDelay: "-3s" }} />
+          <div className="aside-particle" style={{ width: 4, height: 4, background: "oklch(0.72 0.32 330 / 0.5)", left: "75%", bottom: "30%", animationDuration: "13s", animationDelay: "-5s" }} />
+          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.7 0.32 290 / 0.6)", left: "30%", bottom: "45%", animationDuration: "10s", animationDelay: "-7s" }} />
+          <div className="aside-particle" style={{ width: 3, height: 3, background: "oklch(0.85 0.18 200 / 0.7)", left: "88%", bottom: "20%", animationDuration: "12s", animationDelay: "-1s" }} />
+          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.72 0.32 330 / 0.5)", left: "60%", bottom: "40%", animationDuration: "8s", animationDelay: "-4s" }} />
+          <div className="aside-particle" style={{ width: 1, height: 1, background: "oklch(0.7 0.32 290 / 0.9)", left: "12%", bottom: "55%", animationDuration: "15s", animationDelay: "-6s" }} />
+          <div className="aside-particle-alt" style={{ width: 3, height: 3, background: "oklch(0.85 0.18 200 / 0.6)", left: "65%", bottom: "5%", animationDuration: "14s", animationDelay: "-8s" }} />
         </div>
 
         <div className="relative z-10 flex flex-col justify-between h-full w-full max-w-xl mx-auto grow gap-10">
@@ -201,7 +108,7 @@ export default function RegisterPage() {
               <Film className="text-primary-foreground" size={22} />
             </div>
             <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
-              PHIMFLOW
+              CINEOS
             </span>
           </div>
 
@@ -221,8 +128,8 @@ export default function RegisterPage() {
             </h1>
 
             <p className="max-w-xl text-sm leading-relaxed text-text-secondary">
-              Đăng ký miễn phí, đồng bộ dữ liệu xem phim cá nhân, gợi ý từ AI và biểu đồ thói quen
-              trên mọi thiết bị.
+              Đăng ký miễn phí, đồng bộ dữ liệu xem phim cá nhân, gợi ý từ AI và
+              biểu đồ thói quen trên mọi thiết bị.
             </p>
 
             {/* Animated divider */}
@@ -249,7 +156,9 @@ export default function RegisterPage() {
                     </span>
                   </div>
                   <h3 className="text-xs font-bold">{title}</h3>
-                  <p className="text-[10px] leading-relaxed text-text-secondary">{desc}</p>
+                  <p className="text-[10px] leading-relaxed text-text-secondary">
+                    {desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -275,22 +184,10 @@ export default function RegisterPage() {
         </div>
         <div className="relative w-full max-w-md">
           <div className="absolute -inset-4 cyber-panel-strong rounded-2xl opacity-90" />
-          <div
-            className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-accent"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.7 0.32 290 / 0.7))" }}
-          />
-          <div
-            className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
-          />
-          <div
-            className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
-          />
-          <div
-            className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-accent"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.7 0.32 290 / 0.7))" }}
-          />
+          <div className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-accent" style={{ filter: "drop-shadow(0 0 4px oklch(0.7 0.32 290 / 0.7))" }} />
+          <div className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
+          <div className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
+          <div className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-accent" style={{ filter: "drop-shadow(0 0 4px oklch(0.7 0.32 290 / 0.7))" }} />
 
           <div className="relative z-10 rounded-xl bg-bg/80 p-6 backdrop-blur-md sm:p-8">
             <div className="mb-6 flex items-center gap-2 md:hidden">
@@ -298,7 +195,7 @@ export default function RegisterPage() {
                 <Film className="text-primary-foreground" size={22} />
               </div>
               <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
-                PHIMFLOW
+                CINEOS
               </span>
             </div>
 
@@ -307,7 +204,9 @@ export default function RegisterPage() {
                 <span className="inline-block h-1 w-1 rounded-full bg-accent pulse-glow" />
                 AUTH.REGISTER
               </span>
-              <h1 className="text-2xl font-black tracking-tight">Tạo tài khoản</h1>
+              <h1 className="text-2xl font-black tracking-tight">
+                Tạo tài khoản
+              </h1>
               <p className="mt-2 text-xs text-text-secondary">
                 Bắt đầu hành trình xem phim cá nhân của bạn — hoàn toàn miễn phí.
               </p>

@@ -79,9 +79,15 @@ export const api = {
     }
   },
 
-  async delete<T>(url: string): Promise<ApiResponse<T>> {
+  async delete<T>(url: string, params?: Record<string, string | number>): Promise<ApiResponse<T>> {
     try {
-      const res = await fetch(url, {
+      let queryUrl = url;
+      if (params) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, val]) => searchParams.append(key, String(val)));
+        queryUrl += `?${searchParams.toString()}`;
+      }
+      const res = await fetch(queryUrl, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });

@@ -93,7 +93,7 @@ export function RegisterForm() {
         label="Email"
         type="email"
         autoComplete="email"
-        placeholder="user@phimflow.com"
+        placeholder="user@cineos.com"
         icon={Mail}
         errors={state.fieldErrors?.email}
       />

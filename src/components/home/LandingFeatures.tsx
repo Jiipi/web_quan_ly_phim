@@ -1,5 +1,12 @@
 import React from "react";
-import { PlayCircle, Sparkles, BarChart3, ListPlus, Eye, Clock } from "lucide-react";
+import {
+  PlayCircle,
+  Sparkles,
+  BarChart3,
+  ListPlus,
+  Eye,
+  Clock,
+} from "lucide-react";
 
 const FEATURES = [
   {
@@ -44,19 +51,22 @@ const ACCENT_STYLES = {
   primary: {
     iconBg: "bg-primary/10 border-primary/40",
     iconText: "text-primary glow-text",
-    glow: "group-hover:shadow-[0_0_32px_oklch(0.72_0.32_330_/_0.35)] group-hover:border-primary/60",
+    glow:
+      "group-hover:shadow-[0_0_32px_oklch(0.72_0.32_330_/_0.35)] group-hover:border-primary/60",
     bar: "bg-primary shadow-[0_0_8px_oklch(0.72_0.32_330_/_0.7)]",
   },
   secondary: {
     iconBg: "bg-secondary/10 border-secondary/40",
     iconText: "text-secondary glow-text-cyan",
-    glow: "group-hover:shadow-[0_0_32px_oklch(0.85_0.18_200_/_0.35)] group-hover:border-secondary/60",
+    glow:
+      "group-hover:shadow-[0_0_32px_oklch(0.85_0.18_200_/_0.35)] group-hover:border-secondary/60",
     bar: "bg-secondary shadow-[0_0_8px_oklch(0.85_0.18_200_/_0.7)]",
   },
   accent: {
     iconBg: "bg-accent/10 border-accent/40",
     iconText: "text-accent glow-text-purple",
-    glow: "group-hover:shadow-[0_0_32px_oklch(0.7_0.32_290_/_0.35)] group-hover:border-accent/60",
+    glow:
+      "group-hover:shadow-[0_0_32px_oklch(0.7_0.32_290_/_0.35)] group-hover:border-accent/60",
     bar: "bg-accent shadow-[0_0_8px_oklch(0.7_0.32_290_/_0.7)]",
   },
 };
@@ -98,8 +108,8 @@ export function LandingFeatures() {
             <span className="text-gradient-cinema">Người Nghiện Phim</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-            Giải quyết triệt để các vấn đề thường gặp khi theo dõi danh sách phim lẻ, phim bộ dài
-            tập trên nhiều nền tảng.
+            Giải quyết triệt để các vấn đề thường gặp khi theo dõi danh sách
+            phim lẻ, phim bộ dài tập trên nhiều nền tảng.
           </p>
         </div>
 
@@ -113,12 +123,12 @@ export function LandingFeatures() {
                 className={`group relative flex flex-col gap-4 overflow-hidden rounded-xl border border-white/10 bg-card/30 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 ${styles.glow}`}
               >
                 {/* Top accent bar */}
-                <div className={`absolute inset-x-0 top-0 h-px ${styles.bar}`} />
-                {/* Corner brackets */}
                 <div
-                  className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-r border-t border-current opacity-40 transition-all group-hover:h-3 group-hover:w-3 group-hover:opacity-100"
-                  style={{ color: "var(--primary)" }}
+                  className={`absolute inset-x-0 top-0 h-px ${styles.bar}`}
                 />
+                {/* Corner brackets */}
+                <div className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-r border-t border-current opacity-40 transition-all group-hover:h-3 group-hover:w-3 group-hover:opacity-100"
+                  style={{ color: "var(--primary)" }} />
                 <div
                   className={`mb-1 inline-flex h-11 w-11 items-center justify-center rounded-md border ${styles.iconBg} ${styles.iconText} transition-all group-hover:scale-110 group-hover:[transform:rotate(-8deg)_scale(1.1)]`}
                   style={{
@@ -132,7 +142,9 @@ export function LandingFeatures() {
                   MODULE.{String(idx + 1).padStart(2, "0")}
                 </div>
                 <h3 className="-mt-3 text-base font-bold">{title}</h3>
-                <p className="text-xs leading-relaxed text-text-secondary">{desc}</p>
+                <p className="text-xs leading-relaxed text-text-secondary">
+                  {desc}
+                </p>
               </div>
             );
           })}

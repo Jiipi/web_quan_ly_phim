@@ -31,7 +31,8 @@ const ACCENT_COLORS = {
     stepText: "text-primary glow-text",
     iconBg: "bg-primary/15",
     iconText: "text-primary",
-    line: "from-primary/60 to-transparent via-primary/30",
+    line:
+      "from-primary/60 to-transparent via-primary/30",
     glow: "shadow-[0_0_24px_oklch(0.72_0.32_330_/_0.35)]",
   },
   secondary: {
@@ -39,7 +40,8 @@ const ACCENT_COLORS = {
     stepText: "text-secondary glow-text-cyan",
     iconBg: "bg-secondary/15",
     iconText: "text-secondary",
-    line: "from-secondary/60 to-transparent via-secondary/30",
+    line:
+      "from-secondary/60 to-transparent via-secondary/30",
     glow: "shadow-[0_0_24px_oklch(0.85_0.18_200_/_0.35)]",
   },
   accent: {
@@ -47,7 +49,8 @@ const ACCENT_COLORS = {
     stepText: "text-accent glow-text-purple",
     iconBg: "bg-accent/15",
     iconText: "text-accent",
-    line: "from-accent/60 to-transparent via-accent/30",
+    line:
+      "from-accent/60 to-transparent via-accent/30",
     glow: "shadow-[0_0_24px_oklch(0.7_0.32_290_/_0.35)]",
   },
 };
@@ -66,7 +69,8 @@ export function LandingHowItWorks() {
             <span className="text-gradient-cinema">3 Bước Đơn Giản</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-            Từ việc tìm phim đến nhận phân tích AI — tất cả diễn ra nhanh chóng và trực quan.
+            Từ việc tìm phim đến nhận phân tích AI — tất cả diễn ra nhanh chóng
+            và trực quan.
           </p>
         </div>
 
@@ -75,14 +79,18 @@ export function LandingHowItWorks() {
           {STEPS.map(({ step, Icon, title, desc, accent }, idx) => {
             const colors = ACCENT_COLORS[accent];
             return (
-              <div key={step} className="group relative flex flex-col items-center text-center">
+              <div
+                key={step}
+                className="group relative flex flex-col items-center text-center"
+              >
                 {/* Connector line (not on last) */}
                 {idx < STEPS.length - 1 && (
                   <div
                     aria-hidden="true"
                     className={`absolute left-[calc(50%+40px)] top-10 hidden h-px w-[calc(100%-80px)] bg-gradient-to-r ${colors.line} md:block`}
                     style={{
-                      filter: "drop-shadow(0 0 4px currentColor)",
+                      filter:
+                        "drop-shadow(0 0 4px currentColor)",
                     }}
                   />
                 )}
@@ -109,20 +117,12 @@ export function LandingHowItWorks() {
                 </span>
 
                 <h3 className="mb-2 text-lg font-bold">{title}</h3>
-                <p className="max-w-xs text-xs leading-relaxed text-text-secondary">{desc}</p>
+                <p className="max-w-xs text-xs leading-relaxed text-text-secondary">
+                  {desc}
+                </p>
 
                 {/* HUD bracket bottom */}
-                <div
-                  className="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 border-b border-l border-current opacity-40"
-                  style={{
-                    color:
-                      idx === 0
-                        ? "oklch(0.72 0.32 330)"
-                        : idx === 1
-                          ? "oklch(0.85 0.18 200)"
-                          : "oklch(0.7 0.32 290)",
-                  }}
-                />
+                <div className="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 border-b border-l border-current opacity-40" style={{ color: idx === 0 ? "oklch(0.72 0.32 330)" : idx === 1 ? "oklch(0.85 0.18 200)" : "oklch(0.7 0.32 290)" }} />
               </div>
             );
           })}

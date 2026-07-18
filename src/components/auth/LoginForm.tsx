@@ -45,14 +45,17 @@ export function LoginForm() {
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="user@phimflow.com"
+            placeholder="user@cineos.com"
             required
             aria-invalid={Boolean(state.fieldErrors?.email) || undefined}
             className="rounded-md border-primary/30 bg-bg/60 pl-10 font-mono transition-all focus:border-primary focus:bg-bg/80 focus:shadow-[0_0_12px_oklch(0.72_0.32_330_/_0.3),inset_0_0_8px_oklch(0.72_0.32_330_/_0.1)]"
           />
         </div>
         {state.fieldErrors?.email?.map((err) => (
-          <p key={err} className="font-mono text-[10px] uppercase tracking-wider text-dropped">
+          <p
+            key={err}
+            className="font-mono text-[10px] uppercase tracking-wider text-dropped"
+          >
             ⚠ {err}
           </p>
         ))}
@@ -86,7 +89,10 @@ export function LoginForm() {
           />
         </div>
         {state.fieldErrors?.password?.map((err) => (
-          <p key={err} className="font-mono text-[10px] uppercase tracking-wider text-dropped">
+          <p
+            key={err}
+            className="font-mono text-[10px] uppercase tracking-wider text-dropped"
+          >
             ⚠ {err}
           </p>
         ))}

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
+import { LibraryProvider } from "@/lib/use-library";
 import { ToastProvider } from "@/components/ui/toast";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { QuickAddProvider } from "@/components/shared/QuickAddDialog";
@@ -10,11 +11,13 @@ import { QuickAddProvider } from "@/components/shared/QuickAddDialog";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
-      <ToastProvider>
-        <ConfirmProvider>
-          <QuickAddProvider>{children}</QuickAddProvider>
-        </ConfirmProvider>
-      </ToastProvider>
+      <LibraryProvider>
+        <ToastProvider>
+          <ConfirmProvider>
+            <QuickAddProvider>{children}</QuickAddProvider>
+          </ConfirmProvider>
+        </ToastProvider>
+      </LibraryProvider>
     </SessionProvider>
   );
 }

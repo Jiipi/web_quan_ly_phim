@@ -345,4 +345,171 @@ export const tmdb = {
     const endpoint = `/tv/${id}/season/${seasonNumber}`;
     return this.fetchFromTmdb(endpoint, {}, activeKey);
   },
+
+  /**
+   * Get trending movies/TV shows for the day
+   */
+  async getTrending(
+    mediaType: "movie" | "tv" | "all" = "all",
+    timeWindow: "day" | "week" = "day",
+    userApiKey?: string,
+  ): Promise<TmdbSearchResult[]> {
+    const endpoint = `/trending/${mediaType}/${timeWindow}`;
+    const data = await this.fetchFromTmdb(endpoint, { page: 1 }, userApiKey);
+
+    if (!data.results) return [];
+
+    return (data.results as TmdbRawItem[]).map((item) => {
+      const isTv = item.media_type === "tv" || (mediaType !== "movie" && !item.media_type);
+      return {
+        id: item.id,
+        title: (isTv ? item.name : item.title) ?? "",
+        originalTitle: (isTv ? item.original_name : item.original_title) ?? "",
+        mediaType: (isTv ? "tv" : "movie") as "movie" | "tv",
+        overview: item.overview || "",
+        posterPath: item.poster_path || null,
+        backdropPath: item.backdrop_path || null,
+        releaseDate: isTv ? item.first_air_date || null : item.release_date || null,
+        rating: item.vote_average || 0.0,
+      };
+    });
+  },
+
+  /**
+   * Discover movies with filters
+   */
+  async discoverMovies(
+    options: {
+      page?: number;
+      sortBy?: string;
+      genres?: string;
+      year?: number;
+      voteMin?: number;
+    } = {},
+    userApiKey?: string,
+  ): Promise<TmdbSearchResult[]> {
+    const params: Record<string, string | number> = {
+      page: options.page || 1,
+      sort_by: options.sortBy || "popularity.desc",
+    };
+    if (options.genres) params.with_genres = options.genres;
+    if (options.year) params.primary_release_year = options.year;
+    if (options.voteMin) params["vote_average.gte"] = options.voteMin;
+
+    const data = await this.fetchFromTmdb("/discover/movie", params, userApiKey);
+    if (!data.results) return [];
+
+    return (data.results as TmdbRawItem[]).map((item) => ({
+      id: item.id,
+      title: item.title ?? "",
+      originalTitle: item.original_title ?? "",
+      mediaType: "movie" as const,
+      overview: item.overview || "",
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      releaseDate: item.release_date || null,
+      rating: item.vote_average || 0.0,
+    }));
+  },
+
+  /**
+   * Discover TV shows with filters
+   */
+  async discoverTv(
+    options: {
+      page?: number;
+      sortBy?: string;
+      genres?: string;
+      year?: number;
+      voteMin?: number;
+    } = {},
+    userApiKey?: string,
+  ): Promise<TmdbSearchResult[]> {
+    const params: Record<string, string | number> = {
+      page: options.page || 1,
+      sort_by: options.sortBy || "popularity.desc",
+    };
+    if (options.genres) params.with_genres = options.genres;
+    if (options.year) params.first_air_date_year = options.year;
+    if (options.voteMin) params["vote_average.gte"] = options.voteMin;
+
+    const data = await this.fetchFromTmdb("/discover/tv", params, userApiKey);
+    if (!data.results) return [];
+
+    return (data.results as TmdbRawItem[]).map((item) => ({
+      id: item.id,
+      title: item.name ?? "",
+      originalTitle: item.original_name ?? "",
+      mediaType: "tv" as const,
+      overview: item.overview || "",
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      releaseDate: item.first_air_date || null,
+      rating: item.vote_average || 0.0,
+    }));
+  },
+
+  /**
+   * Get top-rated movies
+   */
+  async getTopRated(
+    mediaType: "movie" | "tv",
+    userApiKey?: string,
+  ): Promise<TmdbSearchResult[]> {
+    const data = await this.fetchFromTmdb(`/${mediaType}/top_rated`, { page: 1 }, userApiKey);
+    if (!data.results) return [];
+
+    const isTv = mediaType === "tv";
+    return (data.results as TmdbRawItem[]).map((item) => ({
+      id: item.id,
+      title: (isTv ? item.name : item.title) ?? "",
+      originalTitle: (isTv ? item.original_name : item.original_title) ?? "",
+      mediaType: mediaType,
+      overview: item.overview || "",
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      releaseDate: isTv ? item.first_air_date || null : item.release_date || null,
+      rating: item.vote_average || 0.0,
+    }));
+  },
+
+  /**
+   * Get now playing/upcoming movies
+   */
+  async getNowPlaying(userApiKey?: string): Promise<TmdbSearchResult[]> {
+    const data = await this.fetchFromTmdb("/movie/now_playing", { page: 1 }, userApiKey);
+    if (!data.results) return [];
+
+    return (data.results as TmdbRawItem[]).map((item) => ({
+      id: item.id,
+      title: item.title ?? "",
+      originalTitle: item.original_title ?? "",
+      mediaType: "movie" as const,
+      overview: item.overview || "",
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      releaseDate: item.release_date || null,
+      rating: item.vote_average || 0.0,
+    }));
+  },
+
+  /**
+   * Get TV shows airing today
+   */
+  async getAiringToday(userApiKey?: string): Promise<TmdbSearchResult[]> {
+    const data = await this.fetchFromTmdb("/tv/airing_today", { page: 1 }, userApiKey);
+    if (!data.results) return [];
+
+    return (data.results as TmdbRawItem[]).map((item) => ({
+      id: item.id,
+      title: item.name ?? "",
+      originalTitle: item.original_name ?? "",
+      mediaType: "tv" as const,
+      overview: item.overview || "",
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      releaseDate: item.first_air_date || null,
+      rating: item.vote_average || 0.0,
+    }));
+  },
 };

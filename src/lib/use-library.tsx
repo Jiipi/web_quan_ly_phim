@@ -27,6 +27,17 @@ export interface LibraryMediaItem {
   runtime: number | null;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface MediaTag {
+  tagId: string;
+  tag: Tag;
+}
+
 export interface LibraryItem {
   id: string;
   status: string;
@@ -41,6 +52,7 @@ export interface LibraryItem {
   completedAt: string | null;
   lastWatchedAt: string | null;
   mediaItem: LibraryMediaItem;
+  tags: MediaTag[];
 }
 
 interface LibraryState {

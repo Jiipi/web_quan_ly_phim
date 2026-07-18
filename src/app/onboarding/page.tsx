@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
 
 export const metadata: Metadata = {
-  title: "Thiết lập ban đầu — PhimFlow",
+  title: "Thiết lập ban đầu — CineOS",
 };
 
 export default async function OnboardingPage() {
@@ -42,29 +42,17 @@ export default async function OnboardingPage() {
           }}
         />
         <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-xl font-black tracking-tight text-transparent">
-          PHIMFLOW
+          CINEOS
         </span>
       </div>
 
       <main className="z-10 w-full max-w-lg">
         <div className="relative">
           <div className="absolute -inset-4 cyber-panel-strong rounded-2xl" />
-          <div
-            className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-primary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
-          />
-          <div
-            className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
-          />
-          <div
-            className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
-          />
-          <div
-            className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-primary"
-            style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
-          />
+          <div className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-primary" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
+          <div className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
+          <div className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
+          <div className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-primary" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
 
           <div className="relative z-10 rounded-xl bg-bg/80 p-8 backdrop-blur-md">
             <div className="mb-6 text-center">
@@ -72,10 +60,12 @@ export default async function OnboardingPage() {
                 <span className="inline-block h-1 w-1 rounded-full bg-primary pulse-glow" />
                 SETUP.WIZARD
               </span>
-              <h1 className="text-xl font-black tracking-tight holo-text">Chào mừng bạn!</h1>
+              <h1 className="text-xl font-black tracking-tight holo-text">
+                Chào mừng bạn!
+              </h1>
               <p className="mt-1 text-xs text-text-secondary">
-                Cho chúng tôi biết gu xem phim để gợi ý chính xác hơn. Bạn có thể đổi lại sau trong
-                Cài đặt.
+                Cho chúng tôi biết gu xem phim để gợi ý chính xác hơn. Bạn có
+                thể đổi lại sau trong Cài đặt.
               </p>
             </div>
             <OnboardingForm />

@@ -192,7 +192,7 @@ function AIPageInner() {
           </Badge>
           <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
             <Sparkles className="text-secondary animate-pulse" size={24} />
-            Trợ lý AI PhimFlow
+            Trợ lý AI CineOS
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
             Tóm tắt không spoil tới tập bạn đang xem và gợi ý phim theo tâm trạng.

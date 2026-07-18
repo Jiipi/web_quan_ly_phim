@@ -6,15 +6,35 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
   type ReactNode,
 } from "react";
-import { X, Search, Film, Tv, Play, Plus, ListPlus, Loader2, Star } from "lucide-react";
+import { X, Search, Film, Tv, Play, Plus, ListPlus, Loader2, Star, Clock, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { useLibrary } from "@/lib/use-library";
 import { PosterImage } from "./PosterImage";
 import { RatingDisplay } from "./RatingDisplay";
 import { type WatchStatus } from "./StatusBadge";
+
+// Unified search result type
+interface UnifiedSearchResult {
+  id: string;
+  title: string;
+  originalTitle?: string;
+  year?: string;
+  type: "movie" | "tv";
+  mediaType?: string;
+  poster?: string;
+  overview?: string;
+  sources: string[];
+  tmdbId?: number;
+  imdbId?: string;
+  tvmazeId?: number;
+  score: number;
+  genres?: string[];
+  rating?: number;
+}
 
 interface QuickAddMedia {
   id: number;
@@ -92,6 +112,8 @@ function QuickAddDialog({
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<QuickAddMedia[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [trendingResults, setTrendingResults] = useState<QuickAddMedia[]>([]);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
   const [selectedMedia, setSelectedMedia] = useState<QuickAddMedia | null>(null);
   const [mediaDetail, setMediaDetail] = useState<MediaDetail | null>(null);
@@ -104,22 +126,84 @@ function QuickAddDialog({
 
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search TMDB
+  // Debounced search với unified API
   useEffect(() => {
-    if (prefilled) return; // Nếu có prefilled thì không search
+    if (prefilled) return;
     const trimmed = query.trim();
-    if (trimmed.length < 2) return;
+    
+    // Hiện trending khi input rỗng
+    if (trimmed.length === 0) {
+      loadTrending();
+      return;
+    }
+    
+    // Hiện history khi gõ dưới 2 ký tự
+    if (trimmed.length < 2) {
+      loadHistory();
+      return;
+    }
 
     const timer = setTimeout(async () => {
-      const res = await api.get<QuickAddMedia[]>("/api/tmdb/search", { q: trimmed });
-      setIsSearching(false);
-      if (res.success && res.data) {
-        setSearchResults(res.data.slice(0, 5));
+      setIsSearching(true);
+      try {
+        const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search", { 
+          q: trimmed,
+          limit: 8 
+        });
+        setIsSearching(false);
+        if (res.success && res.data) {
+          setSearchResults(res.data.results.map(normalizeUnifiedResult));
+        }
+      } catch {
+        setIsSearching(false);
       }
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [query, prefilled]);
+
+  // Load trending suggestions
+  const loadTrending = useCallback(async () => {
+    try {
+      const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search/trending", { 
+        limit: 6 
+      });
+      if (res.success && res.data) {
+        setTrendingResults(res.data.results.map(normalizeUnifiedResult));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Load search history
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await api.get<{ results: { query: string; type: string | null }[] }>(
+        "/api/search/history",
+        { limit: 5 }
+      );
+      if (res.success && res.data) {
+        setSearchHistory(res.data.results.map((r) => r.query));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Normalize unified search result to QuickAddMedia
+  const normalizeUnifiedResult = (r: UnifiedSearchResult): QuickAddMedia => ({
+    id: r.tmdbId || r.tvmazeId || parseInt(r.id.replace(/\D/g, "")) || 0,
+    title: r.title,
+    originalTitle: r.originalTitle || "",
+    mediaType: r.type,
+    posterPath: r.poster || null,
+    releaseDate: r.year ? `${r.year}-01-01` : null,
+    rating: r.rating || 0,
+  });
+
+  // Save search query
+  const saveSearchQuery = async (q: string, type?: string) => {
+    try {
+      await api.post("/api/search/history", { query: q, type });
+    } catch { /* ignore */ }
+  };
 
   // Load detail khi chọn phim (gọi trực tiếp từ event handler)
   const handleSelectMedia = async (media: { id: number; type: "movie" | "tv" }) => {
@@ -261,9 +345,11 @@ function QuickAddDialog({
                     setQuery(val);
                     if (val.trim().length < 2) {
                       setSearchResults([]);
-                      setIsSearching(false);
-                    } else {
-                      setIsSearching(true);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && query.trim().length >= 2) {
+                      saveSearchQuery(query.trim());
                     }
                   }}
                   className="w-full rounded-xl border border-white/8 bg-white/5 py-3 pl-11 pr-10 text-xs text-text placeholder:text-text-muted transition-colors focus:border-primary/50 focus:outline-none"
@@ -274,7 +360,61 @@ function QuickAddDialog({
                     size={16}
                   />
                 )}
+                {query.trim().length === 0 && !isSearching && (
+                  <TrendingUp className="absolute right-3 top-3 text-primary/60" size={14} />
+                )}
               </div>
+
+              {/* Trending Section (when input empty) */}
+              {query.trim().length === 0 && !isSearching && trendingResults.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                    <TrendingUp size={12} />
+                    Đang thịnh hành
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {trendingResults.map((media) => (
+                      <button
+                        key={`trending-${media.id}`}
+                        onClick={() => {
+                          setSelectedMedia(media);
+                          handleSelectMedia({ id: media.id, type: media.mediaType });
+                        }}
+                        className="flex flex-col items-center gap-1.5 rounded-lg p-2 transition-colors hover:bg-white/5"
+                      >
+                        <div className="h-20 w-14 overflow-hidden rounded shadow-md bg-white/5">
+                          <PosterImage src={media.posterPath} alt={media.title} />
+                        </div>
+                        <span className="text-[9px] font-semibold text-text text-center line-clamp-2 w-full">
+                          {media.title}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Search History (when input < 2 chars) */}
+              {query.trim().length > 0 && query.trim().length < 2 && !isSearching && searchHistory.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                    <Clock size={12} />
+                    Tìm kiếm gần đây
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {searchHistory.map((q, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setQuery(q)}
+                        className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[10px] text-text-secondary transition-colors hover:bg-white/10 hover:text-text"
+                      >
+                        <Clock size={10} />
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Search Results */}
               {searchResults.length > 0 && (
@@ -285,6 +425,7 @@ function QuickAddDialog({
                       onClick={() => {
                         setSelectedMedia(media);
                         handleSelectMedia({ id: media.id, type: media.mediaType });
+                        saveSearchQuery(media.title, media.mediaType);
                       }}
                       className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/5"
                     >

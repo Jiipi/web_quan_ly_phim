@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PhimFlow — Hệ điều hành xem phim cá nhân",
+  title: "CineOS — Hệ điều hành xem phim cá nhân",
   description:
     "Quản lý watchlist, theo dõi tiến độ phim bộ, tóm tắt AI không spoil và phân tích gu xem phim cá nhân.",
 };

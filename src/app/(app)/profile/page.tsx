@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Heart, Film, CheckCircle2, PlayCircle, Library } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,7 +16,7 @@ export default async function ProfilePage() {
     db.watchItem.count({ where: { userId, status: "watching" } }),
   ]);
 
-  const name = session.user.name || "Người dùng PhimFlow";
+  const name = session.user.name || "Người dùng CineOS";
   const email = session.user.email || "";
   const initial = (name || email || "U").charAt(0).toUpperCase();
   const genres = pref?.favGenres ?? [];

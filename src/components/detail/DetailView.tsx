@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { countryLabel, STATUS_OPTIONS } from "@/lib/labels";
+import { TagAssignment } from "@/components/tags/TagAssignment";
 
 export function DetailView({ detail, initial }: { detail: MediaDetail; initial: DetailInitial }) {
   const { success, error: toastError } = useToast();
@@ -24,8 +25,11 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
     (initial.status as WatchStatus | null) ?? "want_to_watch",
   );
   const [currentEpisode, setCurrentEpisode] = useState(initial.currentEpisode);
+  const [currentMinute, setCurrentMinute] = useState(initial.currentMinute);
   const [busy, setBusy] = useState(false);
   const [epInput, setEpInput] = useState(String(initial.currentEpisode));
+  const [minuteInput, setMinuteInput] = useState(String(initial.currentMinute));
+  const [currentTags, setCurrentTags] = useState(initial.tags ?? []);
 
   async function addToLibrary(initialStatus: WatchStatus) {
     setBusy(true);
@@ -56,17 +60,32 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
     }
   }
 
-  async function setEpisode(target: number) {
+  async function refreshTags() {
+    if (!watchItemId) return;
+    const res = await api.get<any[]>("/api/library");
+    if (res.success && res.data) {
+      const match = res.data.find((item) => item.id === watchItemId);
+      if (match) {
+        setCurrentTags(match.tags || []);
+      }
+    }
+  }
+
+  async function setEpisode(target: number, minute?: number) {
     if (!watchItemId) return;
     setBusy(true);
-    const res = await api.post<{ currentEpisode: number; status: WatchStatus; completed: boolean }>(
+    const res = await api.post<{ currentEpisode: number; currentMinute: number; status: WatchStatus; completed: boolean }>(
       "/api/progress",
-      { watchItemId, episode: target },
+      { watchItemId, episode: target, minute },
     );
     setBusy(false);
     if (res.success && res.data) {
       setCurrentEpisode(res.data.currentEpisode);
       setEpInput(String(res.data.currentEpisode));
+      if (minute !== undefined) {
+        setCurrentMinute(res.data.currentMinute);
+        setMinuteInput(String(res.data.currentMinute));
+      }
       if (res.data.status) setStatus(res.data.status);
       if (res.data.completed) success(`Đã xem xong "${detail.title}"! 🎉`);
       else success(`Đã cập nhật tới tập ${res.data.currentEpisode}.`);
@@ -159,21 +178,47 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
                   </button>
                 </>
               ) : (
-                <label className="flex items-center gap-2 text-xs text-text-secondary">
-                  Trạng thái:
-                  <select
-                    value={status}
-                    onChange={(e) => changeStatus(e.target.value as WatchStatus)}
-                    aria-label="Đổi trạng thái xem"
-                    className="rounded-lg border border-white/8 bg-card p-2 text-xs text-text focus:outline-none"
-                  >
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div className="flex flex-wrap items-center gap-4">
+                  <label className="flex items-center gap-2 text-xs text-text-secondary">
+                    Trạng thái:
+                    <select
+                      value={status}
+                      onChange={(e) => changeStatus(e.target.value as WatchStatus)}
+                      aria-label="Đổi trạng thái xem"
+                      className="rounded-lg border border-white/8 bg-card p-2 text-xs text-text focus:outline-none"
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {/* Tag assignment and list */}
+                  <div className="flex items-center gap-2 border-l border-white/10 pl-4">
+                    <TagAssignment
+                      watchItemId={watchItemId || ""}
+                      currentTags={currentTags}
+                      onUpdate={refreshTags}
+                    />
+                    <div className="flex flex-wrap gap-1.5">
+                      {currentTags.map((mt) => (
+                        <span
+                          key={mt.tagId}
+                          className="inline-block rounded-full px-2.5 py-0.5 text-[10px] font-medium border"
+                          style={{
+                            backgroundColor: `${mt.tag.color}15`,
+                            borderColor: mt.tag.color,
+                            color: mt.tag.color,
+                          }}
+                        >
+                          {mt.tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {detail.trailerKey && (
@@ -198,6 +243,9 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
             <h2 className="text-base font-bold text-white">Tiến độ tập</h2>
             <span className="font-mono text-xs text-text-secondary">
               {currentEpisode}/{total > 0 ? total : "?"}
+              {currentMinute > 0 && detail.runtime && (
+                <span className="text-text-muted"> · {currentMinute}/{detail.runtime}p</span>
+              )}
             </span>
           </div>
 
@@ -239,11 +287,25 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
                   max={total > 0 ? total : undefined}
                   value={epInput}
                   onChange={(e) => setEpInput(e.target.value)}
-                  className="w-28 rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none"
+                  className="w-24 rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="min-input" className="text-[10px] text-text-muted">
+                  Phút trong tập
+                </label>
+                <input
+                  id="min-input"
+                  type="number"
+                  min={0}
+                  max={detail.runtime || 90}
+                  value={minuteInput}
+                  onChange={(e) => setMinuteInput(e.target.value)}
+                  className="w-20 rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none"
                 />
               </div>
               <button
-                onClick={() => setEpisode(Number(epInput))}
+                onClick={() => setEpisode(Number(epInput), Number(minuteInput))}
                 disabled={busy}
                 className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-glow-primary transition-all hover:bg-primary-hover disabled:opacity-60"
               >

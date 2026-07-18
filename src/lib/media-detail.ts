@@ -7,6 +7,8 @@ export interface DetailInitial {
   watchItemId: string | null;
   status: string | null;
   currentEpisode: number;
+  currentMinute: number;
+  tags?: Array<{ tagId: string; tag: { id: string; name: string; color: string } }>;
 }
 
 /** Lấy trạng thái WatchItem của user cho tmdbId (null user hoặc chưa thêm -> inLibrary false). */
@@ -19,15 +21,25 @@ export async function loadWatchInitial(
     watchItemId: null,
     status: null,
     currentEpisode: 0,
+    currentMinute: 0,
   };
   if (!userId) return empty;
-  const wi = await db.watchItem.findFirst({ where: { userId, mediaItem: { tmdbId } } });
+  const wi = await db.watchItem.findFirst({
+    where: { userId, mediaItem: { tmdbId } },
+    include: {
+      tags: {
+        include: { tag: true },
+      },
+    },
+  });
   if (!wi) return empty;
   return {
     inLibrary: true,
     watchItemId: wi.id,
     status: wi.status,
     currentEpisode: wi.currentEpisode,
+    currentMinute: wi.currentMinute,
+    tags: wi.tags,
   };
 }
 

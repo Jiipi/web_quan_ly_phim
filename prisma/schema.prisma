@@ -136,9 +136,10 @@ model WatchItem {
   priority       Int       @default(0) // Ưu tiên trong watchlist (cao hơn = ưu tiên hơn; dùng cho sort)
   
   // TV show specific progress
-  currentSeason  Int       @default(1)
-  currentEpisode Int       @default(0)
-  totalEpisodes  Int       @default(0) // Cache total episodes from TMDb
+  currentSeason   Int       @default(1)
+  currentEpisode  Int       @default(0)
+  totalEpisodes   Int       @default(0) // Cache total episodes from TMDb
+  currentMinute   Int       @default(0) // Minutes watched into current episode
   
   startedAt      DateTime?
   completedAt    DateTime?
@@ -387,6 +388,33 @@ model Reminder {
 // STATISTICS / METRICS
 // ==========================================
 
+model Trending {
+  id        String   @id @default(uuid())
+  tmdbId    Int
+  title     String
+  type      String   // "movie" | "tv"
+  poster    String?
+  overview  String?  @db.Text
+  genres    String[]
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tmdbId])
+  @@index([type, views])
+}
+
+model SearchHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  query     String
+  type      String?  // "movie" | "tv"
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, query])
+}
+
 model DropReason {
   watchItemId String   @id
   reason      String   // "Chán", "Dài dòng", "Không hợp gu", "Bị spoil", "Không có thời gian", "Diễn xuất kém", etc.
@@ -411,4 +439,21 @@ model AuditLog {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+// ==========================================
+// DISCOVERY CACHE (Auto-refresh from TMDb)
+// ==========================================
+
+model DiscoveryCache {
+  id          String   @id // e.g. "trending_movie", "toprated_tv", "genre_action_tv"
+  category    String   // "trending", "toprated", "genre", "new"
+  mediaType   String   // "movie" | "tv" | "all"
+  params      String?  // Genre ID, sort_by, etc.
+  data        Json     // Array of { tmdbId, title, posterPath, rating, etc. }
+  refreshedAt DateTime @default(now())
+  expiresAt   DateTime // TTL - when this cache should be refreshed
+
+  @@index([category, mediaType])
+  @@index([expiresAt])
 }

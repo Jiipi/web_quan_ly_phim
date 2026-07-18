@@ -47,22 +47,34 @@ export function LandingHero() {
   const { openQuickAdd } = useQuickAdd();
   const { success, error: toastError } = useToast();
 
-  const watching = useMemo(() => items.filter((i) => i.status === "watching"), [items]);
-  const featuredItem = useMemo<LibraryItem | null>(() => {
-    if (watching.length > 0) return watching[0];
-    if (items.length > 0) {
-      return [...items].sort((a, b) => b.mediaItem.tmdbRating - a.mediaItem.tmdbRating)[0];
-    }
-    return null;
-  }, [watching, items]);
-
-  async function handlePlusOne(item: LibraryItem) {
-    const res = await api.post<{ currentEpisode: number; completed: boolean }>("/api/progress", {
-      watchItemId: item.id,
+  const watching = useMemo(
+    () => items.filter((i) => i.status === "watching"),
+    [items],
+  );
+  const featuredItems = useMemo<LibraryItem[]>(() => {
+    if (items.length === 0) return [];
+    const sorted = [...items].sort((a, b) => {
+      if (a.status === "watching" && b.status !== "watching") return -1;
+      if (a.status !== "watching" && b.status === "watching") return 1;
+      if (a.status === "paused" && b.status !== "paused") return -1;
+      if (a.status !== "paused" && b.status === "paused") return 1;
+      return b.mediaItem.tmdbRating - a.mediaItem.tmdbRating;
     });
+    return sorted.slice(0, 5);
+  }, [items]);
+
+  async function handlePlusOne(item: HeroBannerItem) {
+    const matchedItem = items.find(
+      (i) => i.mediaItem.tmdbId === item.tmdbId && i.mediaItem.mediaType === item.mediaType
+    );
+    if (!matchedItem) return;
+    const res = await api.post<{ currentEpisode: number; completed: boolean }>(
+      "/api/progress",
+      { watchItemId: matchedItem.id },
+    );
     if (res.success) {
-      if (res.data?.completed) success(`Đã xem xong "${item.mediaItem.title}"! 🎉`);
-      else success(`+1 tập "${item.mediaItem.title}".`);
+      if (res.data?.completed) success(`Đã xem xong "${item.title}"! 🎉`);
+      else success(`+1 tập "${item.title}".`);
       await reload();
     } else {
       toastError(res.error ?? "Không thể cập nhật tiến độ.");
@@ -71,6 +83,18 @@ export function LandingHero() {
 
   return (
     <section className="relative flex flex-col items-center justify-center overflow-hidden px-6 text-center pt-28 pb-20 lg:pt-36 lg:pb-28">
+      {/* Ambient floating orbs */}
+      <div aria-hidden="true" className="ambient-orb pointer-events-none absolute -left-24 top-12 z-0 h-96 w-96 bg-primary opacity-30" />
+      <div aria-hidden="true" className="ambient-orb-b pointer-events-none absolute -right-32 top-40 z-0 h-80 w-80 bg-secondary opacity-20" />
+      <div aria-hidden="true" className="ambient-orb pointer-events-none absolute left-1/3 top-60 z-0 h-64 w-64 bg-accent opacity-25" style={{ animationDelay: "-6s" }} />
+
+      {/* Floating particles */}
+      <div aria-hidden="true" className="aside-particle pointer-events-none absolute left-8 top-1/4 z-0 h-1.5 w-1.5 rounded-full bg-primary" style={{ animationDelay: "0s", animationDuration: "8s" }} />
+      <div aria-hidden="true" className="aside-particle pointer-events-none absolute right-12 top-1/3 z-0 h-1 w-1 rounded-full bg-secondary" style={{ animationDelay: "-2s", animationDuration: "10s" }} />
+      <div aria-hidden="true" className="aside-particle pointer-events-none absolute left-1/4 bottom-1/3 z-0 h-1.5 w-1.5 rounded-full bg-accent" style={{ animationDelay: "-4s", animationDuration: "12s" }} />
+      <div aria-hidden="true" className="aside-particle pointer-events-none absolute right-1/4 top-1/2 z-0 h-1 w-1 rounded-full bg-primary" style={{ animationDelay: "-6s", animationDuration: "9s" }} />
+      <div aria-hidden="true" className="aside-particle-alt pointer-events-none absolute left-10 top-1/2 z-0 h-1 w-1 rounded-full bg-secondary" style={{ animationDelay: "-3s", animationDuration: "11s" }} />
+
       {/* Neon orbs local to hero */}
       <div
         aria-hidden="true"
@@ -96,7 +120,7 @@ export function LandingHero() {
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary pulse-glow" />
         {isLoggedIn
           ? `WELCOME BACK, ${userName.toUpperCase()}`
-          : "PHIMFLOW // V3.0 CYBERPUNK BUILD"}
+          : "CINEOS // V3.0 CYBERPUNK BUILD"}
         <Zap size={12} className="fill-current" />
       </div>
 
@@ -104,14 +128,20 @@ export function LandingHero() {
       <h1 className="animate-fade-in-up max-w-4xl text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
         {isLoggedIn ? (
           <>
-            <span className="glitch block" data-text="TIẾP TỤC HÀNH TRÌNH">
+            <span
+              className="glitch block"
+              data-text="TIẾP TỤC HÀNH TRÌNH"
+            >
               TIẾP TỤC HÀNH TRÌNH
             </span>
             <span className="holo-text block">Xem Phim Của Bạn</span>
           </>
         ) : (
           <>
-            <span className="glitch block" data-text="QUẢN LÝ TOÀN BỘ">
+            <span
+              className="glitch block"
+              data-text="QUẢN LÝ TOÀN BỘ"
+            >
               QUẢN LÝ TOÀN BỘ
             </span>
             <span className="holo-text block">Hành Trình Xem Phim</span>
@@ -148,7 +178,10 @@ export function LandingHero() {
             >
               <Search size={16} />
               Khám Phá Phim
-              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              <ArrowRight
+                size={14}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Link>
           </>
         ) : (
@@ -235,11 +268,11 @@ export function LandingHero() {
           <div className="absolute right-3 bottom-3 z-10 h-3 w-3 border-b-2 border-r-2 border-primary" />
 
           {isLoggedIn ? (
-            featuredItem ? (
+            featuredItems.length > 0 ? (
               <div className="p-1">
                 <HeroBanner
-                  item={toHeroItem(featuredItem)}
-                  onPlay={() => handlePlusOne(featuredItem)}
+                  items={featuredItems.map(toHeroItem)}
+                  onPlay={handlePlusOne}
                 />
               </div>
             ) : (
@@ -247,10 +280,13 @@ export function LandingHero() {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary neon-border">
                   <Film size={32} className="glow-text" />
                 </div>
-                <h3 className="mb-2 text-xl font-bold holo-text">Thư Viện Đang Trống</h3>
+                <h3 className="mb-2 text-xl font-bold holo-text">
+                  Thư Viện Đang Trống
+                </h3>
                 <p className="mb-6 max-w-md text-sm leading-relaxed text-text-secondary">
-                  Bắt đầu hành trình của bạn bằng cách thêm những bộ phim đã xem hoặc đang theo dõi.
-                  PhimFlow sẽ tự động đồng bộ tiến độ và đưa ra gợi ý AI phù hợp.
+                  Bắt đầu hành trình của bạn bằng cách thêm những bộ phim đã
+                  xem hoặc đang theo dõi. PhimFlow sẽ tự động đồng bộ tiến độ
+                  và đưa ra gợi ý AI phù hợp.
                 </p>
                 <button
                   onClick={() => openQuickAdd()}
@@ -292,7 +328,9 @@ export function LandingHero() {
                     {[1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
-                        className={`aspect-[2/3] rounded-lg ${i === 4 ? "hidden sm:block" : ""}`}
+                        className={`aspect-[2/3] rounded-lg ${
+                          i === 4 ? "hidden sm:block" : ""
+                        }`}
                         style={{
                           background: `linear-gradient(135deg, oklch(${0.45 + i * 0.06} ${0.2 + i * 0.04} ${330 - i * 30}) 0%, oklch(${0.35 + i * 0.06} ${0.2 + i * 0.04} ${290 - i * 30}) 100%)`,
                           boxShadow: `0 0 ${8 + i * 4}px oklch(${0.6 + i * 0.05} ${0.25 + i * 0.02} ${330 - i * 30} / 0.4)`,

@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Home, Film, Search, List, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/shared/AppHeader";
-import { LibraryProvider } from "@/lib/use-library";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
+import { Footer } from "@/components/shared/Footer";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,23 +21,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen text-text flex flex-col font-sans">
+    <>
       <AppHeader />
-
-      {/* Main container with padding-top mt-16 to avoid fixed header overlap */}
       <main className="flex-1 flex flex-col w-full mt-16 py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-w-0 pb-24 lg:pb-12">
-        <LibraryProvider>
-          <div className="flex-1 w-full flex flex-col">{children}</div>
-        </LibraryProvider>
+        <div className="flex-1 w-full flex flex-col">{children}</div>
       </main>
+      <Footer />
 
       {/* Mobile Bottom Navigation (< 1024px) */}
       <nav className="fixed bottom-0 left-0 right-0 h-16 border-t border-primary/30 bg-bg/95 backdrop-blur-md z-40 lg:hidden flex items-center justify-around px-2 pb-safe cyber-panel">
         {mainNavigation.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname === item.href || (pathname?.startsWith(item.href) ?? false);
+          const active = item.href === "/" ? pathname === "/" : (pathname === item.href || (pathname?.startsWith(item.href) ?? false));
           return (
             <Link
               key={item.name}
@@ -74,6 +68,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <Plus size={26} />
       </button>
-    </div>
+    </>
   );
 }

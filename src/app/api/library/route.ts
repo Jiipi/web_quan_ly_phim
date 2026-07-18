@@ -40,7 +40,12 @@ export async function GET(req: NextRequest) {
 
     const items = await db.watchItem.findMany({
       where: { userId, ...(status && status !== "all" ? { status } : {}) },
-      include: { mediaItem: true },
+      include: {
+        mediaItem: true,
+        tags: {
+          include: { tag: true },
+        },
+      },
       orderBy: { lastWatchedAt: "desc" },
     });
 

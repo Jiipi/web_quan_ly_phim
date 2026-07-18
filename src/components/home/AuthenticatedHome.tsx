@@ -128,21 +128,29 @@ function DashboardContent() {
     [wants],
   );
 
-  const featuredItem = useMemo<LibraryItem | null>(() => {
-    if (watching.length > 0) return watching[0];
-    if (items.length > 0) {
-      return [...items].sort((a, b) => b.mediaItem.tmdbRating - a.mediaItem.tmdbRating)[0];
-    }
-    return null;
-  }, [watching, items]);
+  const featuredItems = useMemo<LibraryItem[]>(() => {
+    if (items.length === 0) return [];
+    const sorted = [...items].sort((a, b) => {
+      if (a.status === "watching" && b.status !== "watching") return -1;
+      if (a.status !== "watching" && b.status === "watching") return 1;
+      if (a.status === "paused" && b.status !== "paused") return -1;
+      if (a.status !== "paused" && b.status === "paused") return 1;
+      return b.mediaItem.tmdbRating - a.mediaItem.tmdbRating;
+    });
+    return sorted.slice(0, 5);
+  }, [items]);
 
-  async function handlePlusOne(item: LibraryItem) {
+  async function handlePlusOne(item: HeroBannerItem) {
+    const matchedItem = items.find(
+      (i) => i.mediaItem.tmdbId === item.tmdbId && i.mediaItem.mediaType === item.mediaType
+    );
+    if (!matchedItem) return;
     const res = await api.post<{ currentEpisode: number; completed: boolean }>("/api/progress", {
-      watchItemId: item.id,
+      watchItemId: matchedItem.id,
     });
     if (res.success) {
-      if (res.data?.completed) success(`Đã xem xong "${item.mediaItem.title}"! 🎉`);
-      else success(`+1 tập "${item.mediaItem.title}".`);
+      if (res.data?.completed) success(`Đã xem xong "${item.title}"! 🎉`);
+      else success(`+1 tập "${item.title}".`);
       await reload();
     } else {
       toastError(res.error ?? "Không thể cập nhật tiến độ.");
@@ -189,8 +197,8 @@ function DashboardContent() {
   return (
     <FadeIn className="flex flex-col gap-8">
       {/* HERO BANNER */}
-      {featuredItem ? (
-        <HeroBanner item={toHeroItem(featuredItem)} onPlay={() => handlePlusOne(featuredItem)} />
+      {featuredItems.length > 0 ? (
+        <HeroBanner items={featuredItems.map(toHeroItem)} onPlay={handlePlusOne} />
       ) : (
         <Card className="relative overflow-hidden border-dashed border-primary/30 bg-gradient-to-br from-card to-surface">
           <div
@@ -207,7 +215,7 @@ function DashboardContent() {
             </div>
             <div>
               <h2 className="text-2xl font-extrabold tracking-tight">
-                Chào mừng bạn đến với PhimFlow!
+                Chào mừng bạn đến với CineOS!
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
                 Thêm những bộ phim hoặc anime yêu thích từ TMDb để bắt đầu ghi chú tiến trình, điểm
@@ -541,7 +549,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                 size={22}
               />
               <span className="font-bold text-base bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent tracking-tight">
-                PhimFlow
+                CineOS
               </span>
             </Link>
             <nav className="hidden lg:flex items-center gap-1">

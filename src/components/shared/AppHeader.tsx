@@ -21,6 +21,7 @@ import {
   Sparkles,
   Settings,
   LogOut,
+  Terminal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
@@ -61,10 +62,60 @@ export function AppHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+
+  // Mock Notifications state
+  const [notifications, setNotifications] = useState([
+    {
+      id: "notif-1",
+      type: "ai",
+      title: "Gợi ý phim từ Trợ lý AI",
+      message: "Dựa trên thư viện và gu xem phim của bạn, AI vừa đề xuất bộ phim 'Dune: Part Two'. Thử xem nhé!",
+      time: "10 phút trước",
+      read: false,
+    },
+    {
+      id: "notif-2",
+      type: "streak",
+      title: "Đạt mốc Streak mới! 🔥",
+      message: "Chúc mừng! Bạn đã duy trì thói quen xem phim 5 ngày liên tiếp. Hãy tiếp tục duy trì nhé!",
+      time: "2 giờ trước",
+      read: false,
+    },
+    {
+      id: "notif-3",
+      type: "reminder",
+      title: "Lịch phát sóng hôm nay",
+      message: "Tập mới của bộ phim 'House of the Dragon' bạn đang theo dõi sẽ phát sóng tối nay.",
+      time: "5 giờ trước",
+      read: true,
+    },
+    {
+      id: "notif-4",
+      type: "system",
+      title: "Cập nhật hệ thống CineOS v3.0",
+      message: "Chào mừng đến với hệ điều hành xem phim cá nhân mới. Khám phá các tính năng AI ngay!",
+      time: "1 ngày trước",
+      read: true,
+    },
+  ]);
+
+  const hasUnread = notifications.some((n) => !n.read);
 
   const { openQuickAdd } = useQuickAdd();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const handleMarkAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const handleToggleRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
 
   useEffect(() => {
     function onScroll() {
@@ -78,6 +129,9 @@ export function AppHeader() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -119,14 +173,14 @@ export function AppHeader() {
           <div className="flex items-center gap-8">
             <Link href="/" className="group flex items-center gap-2">
               <Film
-                className="text-primary transition-all group-hover:rotate-12 group-hover:scale-110"
+                className="logo-breathe text-primary transition-all group-hover:rotate-12 group-hover:scale-110"
                 size={22}
                 style={{
                   filter: "drop-shadow(0 0 8px oklch(0.72 0.32 330 / 0.8))",
                 }}
               />
               <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
-                PHIMFLOW
+                CINEOS
               </span>
             </Link>
 
@@ -210,20 +264,104 @@ export function AppHeader() {
 
                 <ThemeToggle />
 
-                {/* Notifications */}
-                <button
-                  type="button"
-                  aria-label="Thông báo"
-                  className="rounded-md border border-transparent p-2 text-text-secondary transition-all hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
-                >
-                  <Bell
-                    size={16}
-                    style={{
-                      filter: "drop-shadow(0 0 4px transparent)",
+                 {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsNotifOpen(!isNotifOpen);
+                      setIsDropdownOpen(false);
                     }}
-                  />
-                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary pulse-glow" />
-                </button>
+                    aria-label="Thông báo"
+                    title="Thông báo"
+                    className="relative rounded-md border border-transparent p-2 text-text-secondary transition-all hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
+                  >
+                    <Bell
+                      size={16}
+                      style={{
+                        filter: "drop-shadow(0 0 4px transparent)",
+                      }}
+                    />
+                    {hasUnread && (
+                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary pulse-glow" />
+                    )}
+                  </button>
+
+                  {isNotifOpen && (
+                    <div className="absolute right-0 mt-2 w-80 sm:w-96 overflow-hidden rounded-xl border border-primary/40 bg-bg/95 p-1.5 shadow-[0_0_24px_oklch(0.72_0.32_330_/_0.4)] backdrop-blur-xl z-50 animate-fade-in-up">
+                      <div className="flex items-center justify-between border-b border-primary/20 px-3.5 py-2.5">
+                        <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                          Thông báo
+                        </span>
+                        {hasUnread && (
+                          <button
+                            type="button"
+                            onClick={handleMarkAllAsRead}
+                            className="font-mono text-[9px] font-bold uppercase tracking-wider text-secondary hover:text-secondary-hover transition-colors"
+                          >
+                            Đánh dấu đã đọc
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto py-1 divide-y divide-primary/10">
+                        {notifications.length === 0 ? (
+                          <div className="py-8 text-center text-xs text-text-muted">
+                            Không có thông báo nào.
+                          </div>
+                        ) : (
+                          notifications.map((notif) => {
+                            let Icon = Bell;
+                            let iconColor = "text-text-muted bg-surface/50 border-border";
+                            if (notif.type === "ai") {
+                              Icon = Sparkles;
+                              iconColor = "text-secondary bg-secondary/15 border-secondary/30 shadow-[0_0_8px_oklch(0.85_0.18_200_/_0.2)]";
+                            } else if (notif.type === "streak") {
+                              Icon = BarChart3;
+                              iconColor = "text-primary bg-primary/15 border-primary/30 shadow-[0_0_8px_oklch(0.72_0.32_330_/_0.2)]";
+                            } else if (notif.type === "reminder") {
+                              Icon = Calendar;
+                              iconColor = "text-accent bg-accent/15 border-accent/30 shadow-[0_0_8px_oklch(0.68_0.13_195_/_0.2)]";
+                            } else if (notif.type === "system") {
+                              Icon = Terminal;
+                              iconColor = "text-text bg-card border-border";
+                            }
+
+                            return (
+                              <div
+                                key={notif.id}
+                                onClick={() => handleToggleRead(notif.id)}
+                                className={cn(
+                                  "flex gap-3 px-3.5 py-3 transition-colors cursor-pointer text-left relative",
+                                  notif.read ? "hover:bg-white/5" : "bg-primary/5 hover:bg-primary/10"
+                                )}
+                              >
+                                <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs", iconColor)}>
+                                  <Icon size={14} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <p className={cn("text-xs font-bold truncate", notif.read ? "text-white/90" : "text-white")}>
+                                      {notif.title}
+                                    </p>
+                                    {!notif.read && (
+                                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                    )}
+                                  </div>
+                                  <p className="mt-1 text-[11px] leading-relaxed text-text-secondary break-words">
+                                    {notif.message}
+                                  </p>
+                                  <span className="mt-1.5 block font-mono text-[9px] text-text-muted">
+                                    {notif.time}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* User Dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -237,10 +375,7 @@ export function AppHeader() {
                     </div>
                     <ChevronDown
                       size={12}
-                      className={cn(
-                        "text-text-muted transition-transform duration-200",
-                        isDropdownOpen && "rotate-180",
-                      )}
+                      className={cn("text-text-muted transition-transform duration-200", isDropdownOpen && "rotate-180")}
                     />
                   </button>
 

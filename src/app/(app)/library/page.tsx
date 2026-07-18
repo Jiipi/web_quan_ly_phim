@@ -14,6 +14,8 @@ import {
   Tv,
   Film,
   Plus,
+  Tags,
+  Settings,
 } from "lucide-react";
 import { MovieGrid } from "@/components/shared/MovieGrid";
 import { StatusBadge, type WatchStatus } from "@/components/shared/StatusBadge";
@@ -33,10 +35,13 @@ import { useLibrary, type LibraryItem } from "@/lib/use-library";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { countryLabel, STATUS_FILTER_OPTIONS } from "@/lib/labels";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
-import { cn } from "@/lib/utils";
+import { TagAssignment } from "@/components/tags/TagAssignment";
+import { TagFilter, TagChip } from "@/components/tags/TagFilter";
+import { TagManager } from "@/components/tags/TagManager";
+import { TopicFilter, TopicChips } from "@/components/topics/TopicFilter";
 
 type ViewMode = "grid" | "list" | "table";
 type SortKey = "recent" | "title" | "rating" | "progress";
@@ -58,8 +63,11 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [showFilters, setShowFilters] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
 
   const countries = useMemo(() => {
     const set = new Set<string>();
@@ -69,6 +77,35 @@ export default function LibraryPage() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
+    
+    // Mappings for topic filter matching
+    const TOPIC_COUNTRY_MAPPING: Record<string, string> = {
+      "Trung Quốc": "CN",
+      "Hàn Quốc": "KR",
+      "Việt Nam": "VN",
+      "Nhật Bản": "JP",
+      "Mỹ": "US",
+      "Thái Lan": "TH",
+      "Ấn Độ": "IN",
+    };
+
+    const TOPIC_GENRE_MAPPING: Record<string, string[]> = {
+      "Drama": ["Drama", "Chính kịch", "Tâm lý", "Phim truyền hình"],
+      "Hành động": ["Action", "Hành động", "Phim hành động"],
+      "Kinh dị": ["Horror", "Kinh dị", "Thriller", "Gây cấn", "Bí ẩn", "Giật gân"],
+      "Hài": ["Comedy", "Hài", "Hài kịch", "Phim hài"],
+      "Lãng mạn": ["Romance", "Lãng mạn", "Tình cảm", "Phim lãng mạn"],
+      "Khoa học viễn tưởng": ["Sci-Fi", "Science Fiction", "Khoa học viễn tưởng", "Viễn tưởng", "Phim viễn tưởng"],
+      "Giả tưởng": ["Fantasy", "Giả tưởng", "Thần thoại", "Kỳ ảo"],
+      "Chiến tranh": ["War", "Chiến tranh", "Phim chiến tranh"],
+      "Phiêu lưu": ["Adventure", "Phiêu lưu", "Phim phiêu lưu"],
+      "Trinh thám": ["Mystery", "Trinh thám", "Bí ẩn"],
+      "Documentary": ["Documentary", "Tài liệu", "Phim tài liệu"],
+      "Kids": ["Kids", "Trẻ em", "Gia đình", "Family", "Phim trẻ em"],
+      "Hoạt hình": ["Animation", "Hoạt hình", "Phim hoạt hình"],
+      "Anime": ["Animation", "Hoạt hình", "Anime"],
+    };
+
     let result = items.filter((item) => {
       const matchesSearch =
         item.mediaItem.title.toLowerCase().includes(q) ||
@@ -76,7 +113,35 @@ export default function LibraryPage() {
       const matchesStatus = selectedStatus === "all" || item.status === selectedStatus;
       const matchesCountry =
         selectedCountry === "all" || item.mediaItem.countries?.includes(selectedCountry);
-      return matchesSearch && matchesStatus && matchesCountry;
+      
+      const itemTagIds = item.tags.map((t) => t.tagId);
+      const matchesTags =
+        selectedTags.length === 0 || selectedTags.some((tagId) => itemTagIds.includes(tagId));
+      
+      const itemTagNames = item.tags.map((t) => t.tag.name);
+      const matchesTopics =
+        selectedTopics.length === 0 ||
+        selectedTopics.some((topic) => {
+          // 1. Khớp theo tên Tag tùy chỉnh hoặc Tag chủ đề được gán trực tiếp
+          if (itemTagNames.includes(topic)) return true;
+
+          // 2. Khớp theo quốc gia của phim
+          const countryCode = TOPIC_COUNTRY_MAPPING[topic];
+          if (countryCode && item.mediaItem.countries?.includes(countryCode)) return true;
+
+          // 3. Khớp theo thể loại của phim
+          const genresToMatch = TOPIC_GENRE_MAPPING[topic];
+          if (genresToMatch && item.mediaItem.genres?.some((g) => genresToMatch.includes(g))) return true;
+
+          // 4. Các trường hợp đặc biệt khác (như Anime)
+          if (topic === "Anime" && item.mediaItem.genres?.includes("Animation") && item.mediaItem.countries?.includes("JP")) {
+            return true;
+          }
+
+          return false;
+        });
+
+      return matchesSearch && matchesStatus && matchesCountry && matchesTags && matchesTopics;
     });
 
     // Sort
@@ -101,7 +166,7 @@ export default function LibraryPage() {
     });
 
     return result;
-  }, [items, searchQuery, selectedStatus, selectedCountry, sortBy]);
+  }, [items, searchQuery, selectedStatus, selectedCountry, selectedTags, selectedTopics, sortBy]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: items.length };
@@ -142,6 +207,8 @@ export default function LibraryPage() {
     status: item.status as WatchStatus,
     currentEpisode: item.currentEpisode,
     totalEpisodes: item.totalEpisodes,
+    tags: item.tags,
+    showTags: true,
   });
 
   return (
@@ -235,6 +302,39 @@ export default function LibraryPage() {
         ))}
       </div>
 
+      {/* Tag filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <TopicFilter selectedTopics={selectedTopics} onTopicsChange={setSelectedTopics} />
+        <TagFilter selectedTags={selectedTags} onTagsChange={setSelectedTags} />
+        {selectedTags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {selectedTags.map((tagId) => (
+              <TagChip
+                key={tagId}
+                tagId={tagId}
+                tagName={items
+                  .flatMap((i) => i.tags)
+                  .find((t) => t.tagId === tagId)?.tag.name ?? ""}
+                tagColor={
+                  items
+                    .flatMap((i) => i.tags)
+                    .find((t) => t.tagId === tagId)?.tag.color ?? "#888"
+                }
+                onRemove={() => setSelectedTags(selectedTags.filter((id) => id !== tagId))}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Selected topics chips */}
+      {selectedTopics.length > 0 && (
+        <TopicChips
+          selectedTopics={selectedTopics}
+          onRemove={(name) => setSelectedTopics(selectedTopics.filter((n) => n !== name))}
+        />
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-col items-stretch justify-between gap-3 md:flex-row md:items-center">
         <div className="relative max-w-md flex-1">
@@ -270,6 +370,15 @@ export default function LibraryPage() {
             title="Bộ lọc nâng cao"
           >
             <SlidersHorizontal size={14} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowTagManager(true)}
+            aria-label="Quản lý tags"
+            title="Quản lý Tags"
+          >
+            <Settings size={14} />
           </Button>
         </div>
       </div>
@@ -418,6 +527,22 @@ export default function LibraryPage() {
                     Tập {item.currentEpisode}/{item.totalEpisodes}
                   </span>
                 )}
+                {item.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {item.tags.slice(0, 2).map((mt) => (
+                      <span
+                        key={mt.tagId}
+                        className="inline-block rounded-full px-1.5 py-0.5 text-[8px] font-medium"
+                        style={{
+                          backgroundColor: `${mt.tag.color}20`,
+                          color: mt.tag.color,
+                        }}
+                      >
+                        {mt.tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <Button
                 variant="ghost"
@@ -443,6 +568,7 @@ export default function LibraryPage() {
               <thead>
                 <tr className="border-b border-border bg-card text-[10px] font-bold uppercase tracking-wider text-text-muted">
                   <th className="p-3">Tên phim</th>
+                  <th className="p-3">Tags</th>
                   <th className="p-3">Trạng thái</th>
                   <th className="p-3">Quốc gia</th>
                   <th className="p-3">Điểm</th>
@@ -458,6 +584,27 @@ export default function LibraryPage() {
                       <div className="font-bold">{item.mediaItem.title}</div>
                       <div className="text-[10px] text-text-muted">
                         {item.mediaItem.originalTitle}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex flex-wrap gap-1">
+                        {item.tags.slice(0, 2).map((mt) => (
+                          <span
+                            key={mt.tagId}
+                            className="inline-block rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+                            style={{
+                              backgroundColor: `${mt.tag.color}20`,
+                              color: mt.tag.color,
+                            }}
+                          >
+                            {mt.tag.name}
+                          </span>
+                        ))}
+                        {item.tags.length > 2 && (
+                          <span className="text-[9px] text-text-muted">
+                            +{item.tags.length - 2}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="p-3">
@@ -493,6 +640,13 @@ export default function LibraryPage() {
           </div>
         </Card>
       )}
+
+      {/* Tag Manager Dialog */}
+      <TagManager
+        open={showTagManager}
+        onOpenChange={setShowTagManager}
+        onTagChange={reload}
+      />
     </FadeIn>
   );
 }

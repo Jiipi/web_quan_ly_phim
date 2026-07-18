@@ -10,7 +10,7 @@ import { UserDashboardSection } from "./UserDashboardSection";
 import { LandingFeatures } from "./LandingFeatures";
 import { LandingHowItWorks } from "./LandingHowItWorks";
 import { LandingCTA } from "./LandingCTA";
-import { LandingFooter } from "./LandingFooter";
+import { Footer } from "@/components/shared/Footer";
 import { Plus, Home, Film, Search, List } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,9 +42,10 @@ function LandingInner() {
           <LandingFeatures />
           <LandingHowItWorks />
           <LandingCTA />
-          <LandingFooter />
         </>
       )}
+
+      <Footer />
 
       {/* Floating Action Button (FAB) for Quick Add when logged in */}
       {isLoggedIn && (
@@ -71,12 +72,7 @@ function LandingInner() {
                     active ? "text-primary glow-text" : "text-text-muted hover:text-text",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "transition-transform duration-200",
-                      active && "scale-110 text-primary",
-                    )}
-                  >
+                  <div className={cn("transition-transform duration-200", active && "scale-110 text-primary")}>
                     {item.icon}
                   </div>
                   <span>{item.name}</span>
@@ -104,9 +100,5 @@ function LandingInner() {
  * Seamlessly integrates user dashboard widgets into the landing page flow when logged in.
  */
 export function LandingContent() {
-  return (
-    <LibraryProvider>
-      <LandingInner />
-    </LibraryProvider>
-  );
+  return <LandingInner />;
 }

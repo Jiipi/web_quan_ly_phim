@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="flex items-center gap-2">
         <Film className="text-primary" size={28} />
         <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent">
-          PhimFlow
+          CineOS
         </span>
       </div>
       <div className="glass-panel flex max-w-md flex-col items-center gap-4 p-8">

@@ -184,10 +184,7 @@ export default function SettingsPage() {
               ) : (
                 <div className="grid gap-4 text-xs sm:grid-cols-2">
                   <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="theme"
-                      className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
+                    <label htmlFor="theme" className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                       Chế độ hiển thị
                     </label>
                     <select
@@ -201,10 +198,7 @@ export default function SettingsPage() {
                     </select>
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="lang"
-                      className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
+                    <label htmlFor="lang" className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                       Ngôn ngữ hiển thị
                     </label>
                     <select
@@ -218,10 +212,7 @@ export default function SettingsPage() {
                     </select>
                   </div>
                   <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label
-                      htmlFor="scale"
-                      className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
+                    <label htmlFor="scale" className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                       Thang điểm đánh giá
                     </label>
                     <select
@@ -261,8 +252,7 @@ export default function SettingsPage() {
                 Sao lưu &amp; Nhập/Xuất dữ liệu
               </h3>
               <p className="text-xs leading-relaxed text-text-secondary">
-                Xuất toàn bộ thư viện, đánh giá, review và danh sách thành JSON. Nhập lại để khôi
-                phục.
+                Xuất toàn bộ thư viện, đánh giá, review và danh sách thành JSON. Nhập lại để khôi phục.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button asChild variant="outline" size="sm">
@@ -305,23 +295,19 @@ export default function SettingsPage() {
                 Cấu hình AI
               </h3>
               <p className="text-xs leading-relaxed text-text-secondary">
-                PhimFlow dùng <strong className="text-text">AI Mock</strong> theo mặc định — đã được
-                tinh chỉnh để phản hồi thông minh dựa trên dữ liệu thư viện của bạn mà không tốn phí
-                API.
+                CineOS dùng <strong className="text-text">AI Mock</strong> theo mặc định —
+                đã được tinh chỉnh để phản hồi thông minh dựa trên dữ liệu thư viện của bạn mà không
+                tốn phí API.
               </p>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between rounded-xl border border-border bg-card/40 p-3">
                   <div>
                     <div className="text-xs font-bold">Nhà cung cấp AI</div>
                     <div className="text-[10px] text-text-muted">
-                      Có thể đổi sang OpenAI hoặc Google trong{" "}
-                      <code className="font-mono">.env</code>
+                      Có thể đổi sang OpenAI hoặc Google trong <code className="font-mono">.env</code>
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="bg-secondary/15 text-secondary border-secondary/30"
-                  >
+                  <Badge variant="outline" className="bg-secondary/15 text-secondary border-secondary/30">
                     Mock (mặc định)
                   </Badge>
                 </div>
@@ -383,17 +369,11 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2 text-[10px]">
                 <span className="text-text-muted">Trạng thái:</span>
                 {apiKeyInput ? (
-                  <Badge
-                    variant="outline"
-                    className="bg-completed/15 text-completed border-completed/30"
-                  >
+                  <Badge variant="outline" className="bg-completed/15 text-completed border-completed/30">
                     ● Đã thiết lập — đang dùng dữ liệu thật
                   </Badge>
                 ) : (
-                  <Badge
-                    variant="outline"
-                    className="bg-secondary/15 text-secondary border-secondary/30 animate-pulse"
-                  >
+                  <Badge variant="outline" className="bg-secondary/15 text-secondary border-secondary/30 animate-pulse">
                     ● Mock Mode
                   </Badge>
                 )}

@@ -31,7 +31,8 @@ export function LandingCTA() {
           backgroundImage:
             "linear-gradient(oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px), linear-gradient(90deg, oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%)",
+          maskImage:
+            "radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%)",
           WebkitMaskImage:
             "radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%)",
         }}
@@ -91,9 +92,15 @@ export function LandingCTA() {
                 href="/register"
                 className="group flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-[0_0_24px_oklch(0.72_0.32_330_/_0.55),0_0_48px_oklch(0.72_0.32_330_/_0.3)] transition-all hover:bg-primary-hover hover:scale-105 hover:shadow-[0_0_32px_oklch(0.72_0.32_330_/_0.7),0_0_64px_oklch(0.72_0.32_330_/_0.4)] active:scale-95"
               >
-                <PlayCircle size={18} className="transition-transform group-hover:scale-110" />
+                <PlayCircle
+                  size={18}
+                  className="transition-transform group-hover:scale-110"
+                />
                 Deploy Free
-                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                <ArrowRight
+                  size={14}
+                  className="transition-transform group-hover:translate-x-1"
+                />
               </Link>
               <Link
                 href="/login"

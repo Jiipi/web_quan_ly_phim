@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Search, Loader2, Film, Tv, Sparkles } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Loader2, Film, Tv, Sparkles, RefreshCw, Clock } from "lucide-react";
 import { MovieGrid } from "@/components/shared/MovieGrid";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,139 +11,137 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { api } from "@/lib/api";
+import { TopicFilter } from "@/components/topics/TopicFilter";
+import { useQuickAdd } from "@/components/shared/QuickAddDialog";
 
 interface DiscoverResult {
-  id: number;
+  tmdbId: number;
   title: string;
   originalTitle: string;
-  mediaType: string;
+  mediaType: "movie" | "tv";
   posterPath: string | null;
   releaseDate: string | null;
   rating: number;
 }
 
-const DEFAULT_RESULTS: DiscoverResult[] = [
-  {
-    id: 114479,
-    title: "Vụng Trộm Không Thể Giấu",
-    originalTitle: "Hidden Love",
-    mediaType: "tv",
-    posterPath: "/images/posters/hidden-love.jpg",
-    releaseDate: "2023-06-20",
-    rating: 8.7,
-  },
-  {
-    id: 196454,
-    title: "Chiếc Bật Lửa Và Váy Công Chúa",
-    originalTitle: "Lighter and Princess",
-    mediaType: "tv",
-    posterPath: "/images/posters/chiec-bat-lua.jpg",
-    releaseDate: "2022-11-03",
-    rating: 8.6,
-  },
-  {
-    id: 34307,
-    title: "Thám Tử Lừng Danh Conan",
-    originalTitle: "Detective Conan",
-    mediaType: "tv",
-    posterPath: "/images/posters/conan.jpg",
-    releaseDate: "1996-01-08",
-    rating: 8.9,
-  },
-  {
-    id: 414906,
-    title: "Người Dơi",
-    originalTitle: "The Batman",
-    mediaType: "movie",
-    posterPath: "/images/posters/the-batman.jpg",
-    releaseDate: "2022-03-02",
-    rating: 7.7,
-  },
-];
-
-const TV_HIGHLIGHTS: DiscoverResult[] = [
-  {
-    id: 60625,
-    title: "Rick and Morty",
-    originalTitle: "Rick and Morty",
-    mediaType: "tv",
-    posterPath: "/images/posters/rick-morty.jpg",
-    releaseDate: "2013-12-02",
-    rating: 8.7,
-  },
-  {
-    id: 1399,
-    title: "Trò Chơi Vương Quyền",
-    originalTitle: "Game of Thrones",
-    mediaType: "tv",
-    posterPath: "/images/posters/got.jpg",
-    releaseDate: "2011-04-17",
-    rating: 8.4,
-  },
-  {
-    id: 2316,
-    title: "The Office",
-    originalTitle: "The Office",
-    mediaType: "tv",
-    posterPath: "/images/posters/office.jpg",
-    releaseDate: "2005-03-24",
-    rating: 8.5,
-  },
-];
-
-const MOVIE_HIGHLIGHTS: DiscoverResult[] = [
-  {
-    id: 27205,
-    title: "Kẻ Hủy Diệt",
-    originalTitle: "Inception",
-    mediaType: "movie",
-    posterPath: "/images/posters/inception.jpg",
-    releaseDate: "2010-07-15",
-    rating: 8.4,
-  },
-  {
-    id: 155,
-    title: "Kỵ Sĩ Bóng Đêm",
-    originalTitle: "The Dark Knight",
-    mediaType: "movie",
-    posterPath: "/images/posters/dark-knight.jpg",
-    releaseDate: "2008-07-16",
-    rating: 8.5,
-  },
-  {
-    id: 680,
-    title: "Pulp Fiction",
-    originalTitle: "Pulp Fiction",
-    mediaType: "movie",
-    posterPath: "/images/posters/pulp.jpg",
-    releaseDate: "1994-10-14",
-    rating: 8.5,
-  },
-];
-
-function toMovieRowItem(r: DiscoverResult) {
-  return {
-    id: String(r.id),
-    tmdbId: r.id,
-    mediaType: (r.mediaType === "tv" ? "tv" : "movie") as "movie" | "tv",
-    title: r.title,
-    originalTitle: r.originalTitle,
-    posterPath: r.posterPath,
-    rating: r.rating,
-    releaseDate: r.releaseDate,
-  };
+interface DiscoveryData {
+  trending: DiscoverResult[];
+  trendingMovies: DiscoverResult[];
+  trendingTv: DiscoverResult[];
+  topRatedMovies: DiscoverResult[];
+  topRatedTv: DiscoverResult[];
+  newMovies: DiscoverResult[];
+  airingToday: DiscoverResult[];
+  trendingRefreshed: boolean;
 }
 
 export default function DiscoverPage() {
+  const router = useRouter();
+  const { openQuickAdd } = useQuickAdd();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [mediaType, setMediaType] = useState<"all" | "movie" | "tv">("all");
-  const [results, setResults] = useState<DiscoverResult[]>(DEFAULT_RESULTS);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [results, setResults] = useState<DiscoverResult[]>([]);
+  const [topicResults, setTopicResults] = useState<DiscoverResult[]>([]);
+  const [discovery, setDiscovery] = useState<DiscoveryData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  function toMovieRowItem(r: DiscoverResult) {
+    return {
+      id: String(r.tmdbId),
+      tmdbId: r.tmdbId,
+      mediaType: r.mediaType,
+      title: r.title,
+      originalTitle: r.originalTitle,
+      posterPath: r.posterPath,
+      rating: r.rating,
+      releaseDate: r.releaseDate,
+      onAdd: () => openQuickAdd({ id: r.tmdbId, type: r.mediaType }),
+      onPlay: () => router.push(`/${r.mediaType === "tv" ? "show" : "movie"}/${r.tmdbId}`),
+    };
+  }
+  const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true);
+  const [isLoadingTopic, setIsLoadingTopic] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
+  // Fetch topic-specific results
+  const fetchTopicResults = useCallback(async (topics: string[]) => {
+    if (topics.length === 0) {
+      setTopicResults([]);
+      return;
+    }
+
+    setIsLoadingTopic(true);
+    try {
+      const allResults: DiscoverResult[] = [];
+      
+      for (const topic of topics) {
+        const res = await api.get<{ success: boolean; topic: string; results: DiscoverResult[] }>(
+          `/api/discover/topics?topic=${encodeURIComponent(topic)}&mediaType=${mediaType}`
+        );
+        console.log("Topic API response:", topic, res);
+        if (res.success && res.data?.results) {
+          allResults.push(...res.data.results);
+        }
+      }
+
+      console.log("All results before dedup:", allResults.length);
+
+      console.log("All results before dedup:", allResults.length);
+
+      // Deduplicate by tmdbId
+      const seen = new Set<number>();
+      const unique = allResults.filter((r) => {
+        if (seen.has(r.tmdbId)) return false;
+        seen.add(r.tmdbId);
+        return true;
+      });
+
+      console.log("Unique results after dedup:", unique.length);
+      setTopicResults(unique);
+    } catch (err) {
+      console.error("Failed to fetch topic results:", err);
+      setTopicResults([]);
+    } finally {
+      setIsLoadingTopic(false);
+    }
+  }, [mediaType]);
+
+  // Fetch topic results when topics or mediaType changes
+  useEffect(() => {
+    console.log("Topics changed:", selectedTopics, "mediaType:", mediaType);
+    const timer = setTimeout(() => {
+      fetchTopicResults(selectedTopics);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [selectedTopics, mediaType, fetchTopicResults]);
+
+  const fetchDiscovery = useCallback(async (forceRefresh = false) => {
+    setIsLoadingDiscovery(true);
+    try {
+      const res = await api.get<DiscoveryData & { success: boolean }>(
+        `/api/discover${forceRefresh ? "?refresh=true" : ""}`
+      );
+      if (res.success && res.data) {
+        setDiscovery(res.data as DiscoveryData);
+        setLastRefreshed(new Date());
+      }
+    } catch (err) {
+      console.error("Failed to fetch discovery:", err);
+    } finally {
+      setIsLoadingDiscovery(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDiscovery();
+  }, [fetchDiscovery]);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (!searchQuery.trim()) {
-        setResults(DEFAULT_RESULTS);
+        setResults([]);
         return;
       }
       setIsLoading(true);
@@ -158,20 +157,49 @@ export default function DiscoverPage() {
 
   const isSearching = searchQuery.trim().length > 0;
 
+  const handleRefresh = () => fetchDiscovery(true);
+
+  const formatLastRefreshed = (date: Date) => {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000 / 60);
+    if (diff < 1) return "Vừa xong";
+    if (diff < 60) return `${diff} phút trước`;
+    const hours = Math.floor(diff / 60);
+    return `${hours} giờ trước`;
+  };
+
   return (
     <FadeIn className="flex flex-col gap-6">
       {/* Header */}
-      <div>
-        <Badge
-          variant="outline"
-          className="mb-2 bg-secondary/15 text-secondary border-secondary/30"
-        >
-          <Sparkles size={10} /> TMDb
-        </Badge>
-        <h1 className="text-2xl font-extrabold tracking-tight">Khám phá phim mới</h1>
-        <p className="mt-1 text-xs text-text-secondary">
-          Tìm phim lẻ hoặc phim bộ từ kho dữ liệu TMDb để thêm vào thư viện theo dõi.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <Badge
+            variant="outline"
+            className="mb-2 bg-secondary/15 text-secondary border-secondary/30"
+          >
+            <Sparkles size={10} /> TMDb
+          </Badge>
+          <h1 className="text-2xl font-extrabold tracking-tight">Khám phá phim mới</h1>
+          <p className="mt-1 text-xs text-text-secondary">
+            Tìm phim lẻ hoặc phim bộ từ kho dữ liệu TMDb để thêm vào thư viện theo dõi.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {lastRefreshed && (
+            <span className="hidden text-[10px] text-text-muted sm:block">
+              <Clock size={10} className="mr-1 inline" />
+              Cập nhật {formatLastRefreshed(lastRefreshed)}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={isLoadingDiscovery}
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-white/10 disabled:opacity-50"
+          >
+            <RefreshCw size={12} className={isLoadingDiscovery ? "animate-spin" : ""} />
+            Làm mới
+          </button>
+        </div>
       </div>
 
       {/* Search + Tabs */}
@@ -204,6 +232,9 @@ export default function DiscoverPage() {
         </Tabs>
       </div>
 
+      {/* Topic Filter */}
+      <TopicFilter selectedTopics={selectedTopics} onTopicsChange={setSelectedTopics} />
+
       {/* Content */}
       {isSearching ? (
         // Search results
@@ -231,29 +262,139 @@ export default function DiscoverPage() {
             <h3 className="text-sm font-extrabold uppercase tracking-wider text-text">
               Kết quả ({results.length})
             </h3>
-            <MovieGrid items={results.map(toMovieRowItem)} />
+            <MovieGrid items={results.map(toMovieRowItem)} showQuickActions />
           </section>
         )
-      ) : (
-        // Default — featured rows
+      ) : selectedTopics.length > 0 ? (
+        // Topic-filtered results from TMDb API
+        isLoadingTopic ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-20">
+              <Loader2 className="animate-spin text-primary" size={32} />
+              <p className="text-xs text-text-secondary">Đang tìm phim theo chủ đề...</p>
+            </CardContent>
+          </Card>
+        ) : topicResults.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-20 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-text-muted">
+                <Sparkles size={20} />
+              </div>
+              <h4 className="text-sm font-bold">Không tìm thấy phim</h4>
+              <p className="max-w-xs text-xs leading-relaxed text-text-secondary">
+                Không có phim nào cho chủ đề đã chọn.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <section className="flex flex-col gap-3">
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-text">
+              {selectedTopics.join(", ")} ({topicResults.length})
+            </h3>
+            <MovieGrid items={topicResults.map(toMovieRowItem)} showQuickActions />
+          </section>
+        )
+      ) : isLoadingDiscovery ? (
+        // Loading discovery sections
         <div className="flex flex-col gap-8">
-          <MovieRow
-            title="Gợi ý hôm nay"
-            subtitle="Những phim được đề xuất để bạn bắt đầu"
-            items={DEFAULT_RESULTS.map(toMovieRowItem)}
-            showQuickActions
-          />
-          <MovieRow
-            title="Phim bộ nổi bật"
-            items={TV_HIGHLIGHTS.map(toMovieRowItem)}
-            showQuickActions
-          />
-          <MovieRow
-            title="Phim lẻ hay"
-            items={MOVIE_HIGHLIGHTS.map(toMovieRowItem)}
-            showQuickActions
-          />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse">
+              <div className="mb-3 h-5 w-48 rounded bg-white/5" />
+              <div className="mb-4 h-3 w-32 rounded bg-white/5" />
+              <div className="flex gap-4 overflow-hidden">
+                {[1, 2, 3, 4, 5].map((j) => (
+                  <div
+                    key={j}
+                    className="h-52 w-36 shrink-0 rounded-lg bg-white/5"
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
+      ) : discovery ? (
+        // Real data sections (no topics selected)
+        <div className="flex flex-col gap-8">
+          {/* Trending Today */}
+          {discovery.trending?.length > 0 && (
+            <MovieRow
+              title="Xu hướng hôm nay"
+              subtitle="Những phim đang hot nhất"
+              items={discovery.trending.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* Top Rated Movies */}
+          {discovery.topRatedMovies?.length > 0 && (
+            <MovieRow
+              title="Phim lẻ đáng xem nhất"
+              subtitle="Điểm cao từ khán giả"
+              items={discovery.topRatedMovies.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* Top Rated TV */}
+          {discovery.topRatedTv?.length > 0 && (
+            <MovieRow
+              title="Phim bộ đáng xem nhất"
+              subtitle="Top series mọi thời đại"
+              items={discovery.topRatedTv.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* Trending Movies */}
+          {discovery.trendingMovies?.length > 0 && (
+            <MovieRow
+              title="Phim lẻ thịnh hành"
+              items={discovery.trendingMovies.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* Trending TV */}
+          {discovery.trendingTv?.length > 0 && (
+            <MovieRow
+              title="Phim bộ thịnh hành"
+              items={discovery.trendingTv.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* New Movies */}
+          {discovery.newMovies?.length > 0 && (
+            <MovieRow
+              title="Phim mới chiếu rạp"
+              subtitle="Đang hoặc sắp chiếu"
+              items={discovery.newMovies.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+
+          {/* Airing Today */}
+          {discovery.airingToday?.length > 0 && (
+            <MovieRow
+              title="Phát sóng hôm nay"
+              subtitle="Những tập mới nhất"
+              items={discovery.airingToday.slice(0, 10).map(toMovieRowItem)}
+              showQuickActions
+            />
+          )}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-20 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-text-muted">
+              <Sparkles size={20} />
+            </div>
+            <h4 className="text-sm font-bold">Không thể tải dữ liệu</h4>
+            <p className="max-w-xs text-xs leading-relaxed text-text-secondary">
+              Đã xảy ra lỗi khi kết nối với TMDb. Thử làm mới trang.
+            </p>
+          </CardContent>
+        </Card>
       )}
     </FadeIn>
   );

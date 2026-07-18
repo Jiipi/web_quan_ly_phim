@@ -15,10 +15,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { watchItemId, note, episode } = body as {
+    const { watchItemId, note, episode, minute } = body as {
       watchItemId?: string;
       note?: string;
       episode?: number;
+      minute?: number;
     };
 
     if (!watchItemId) {
@@ -88,11 +89,18 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Update currentMinute nếu được truyền lên.
+      const minuteData =
+        minute !== undefined
+          ? { currentMinute: Math.max(0, Math.min(minute, watchItem.mediaItem.runtime || 90)) }
+          : {};
+
       return tx.watchItem.update({
         where: { id: watchItemId },
         data: {
           currentEpisode: target,
           lastWatchedAt: new Date(),
+          ...minuteData,
           ...(isCompleted
             ? { status: "completed", completedAt: new Date() }
             : target > 0
@@ -105,6 +113,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       currentEpisode: updated.currentEpisode,
+      currentMinute: updated.currentMinute,
       status: updated.status,
       completed: isCompleted,
     });

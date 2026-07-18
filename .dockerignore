@@ -1,10 +1,53 @@
+# Dependencies
 node_modules
+.npm
+
+# Next.js
 .next
-.git
-.agents
-*.md
-Dockerfile*
-docker-compose.yml
 out
-build
+.cache
+
+# Build outputs
 dist
+build
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+
+# Documentation
+*.md
+!package.json
+!package-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage
+.nyc_output
+
+# Misc
+.DOCUSIGN*
+.temp

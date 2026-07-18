@@ -25,7 +25,7 @@ export default function GlobalError({
           padding: "24px",
         }}
       >
-        <title>Lỗi hệ thống — PhimFlow</title>
+        <title>Lỗi hệ thống — CineOS</title>
         <h1 style={{ fontSize: "20px", fontWeight: 700, margin: 0 }}>Lỗi hệ thống</h1>
         <p style={{ fontSize: "14px", color: "#94A3B8", maxWidth: "28rem", lineHeight: 1.6 }}>
           Ứng dụng gặp sự cố nghiêm trọng. Vui lòng tải lại trang.
