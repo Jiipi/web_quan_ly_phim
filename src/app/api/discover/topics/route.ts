@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tmdb } from "@/lib/tmdb";
+import { Prisma } from "@prisma/client";
 
 // GET /api/discover/topics?topic=Trung Quốc&mediaType=tv
 export async function GET(req: NextRequest) {
@@ -20,33 +21,33 @@ export async function GET(req: NextRequest) {
       "Hàn Quốc": "ko",
       "Nhật Bản": "ja",
       "Việt Nam": "vi",
-      "Mỹ": "en",
+      Mỹ: "en",
       "Thái Lan": "th",
       "Ấn Độ": "hi",
-      "Pháp": "fr",
-      "Đức": "de",
+      Pháp: "fr",
+      Đức: "de",
       "Tây Ban Nha": "es",
-      "Ý": "it",
-      "Nga": "ru",
+      Ý: "it",
+      Nga: "ru",
     };
 
     // Genre topics -> map to TMDb genre IDs
     const genreMap: Record<string, string> = {
-      "Anime": "16",
+      Anime: "16",
       "Hoạt hình": "16",
       "Hành động": "28",
       "Kinh dị": "27",
-      "Hài": "35",
+      Hài: "35",
       "Lãng mạn": "10749",
       "Khoa học viễn tưởng": "878",
       "Giả tưởng": "14",
       "Chiến tranh": "10752",
       "Phiêu lưu": "12",
       "Trinh thám": "9648",
-      "Drama": "18",
-      "Documentary": "99",
-      "Kids": "10751",
-      "Animation": "16",
+      Drama: "18",
+      Documentary: "99",
+      Kids: "10751",
+      Animation: "16",
     };
 
     interface TopicResult {
@@ -58,14 +59,25 @@ export async function GET(req: NextRequest) {
       releaseDate: string | null;
       rating: number;
     }
-    
+
     const results: TopicResult[] = [];
     const isCountry = !!countryMap[topic];
     const isGenre = !!genreMap[topic];
     const filterLang = isCountry ? countryMap[topic] : undefined;
     const filterGenre = isGenre ? genreMap[topic] : undefined;
 
-    console.log("Topic results:", topic, "isCountry:", isCountry, "isGenre:", isGenre, "filterLang:", filterLang, "filterGenre:", filterGenre);
+    console.log(
+      "Topic results:",
+      topic,
+      "isCountry:",
+      isCountry,
+      "isGenre:",
+      isGenre,
+      "filterLang:",
+      filterLang,
+      "filterGenre:",
+      filterGenre,
+    );
 
     // Build common params
     const commonParams: Record<string, string | number> = {
@@ -122,7 +134,7 @@ export async function GET(req: NextRequest) {
     await db.discoveryCache.upsert({
       where: { id: cacheId },
       update: {
-        data: results,
+        data: results as unknown as Prisma.InputJsonValue,
         refreshedAt: new Date(),
         expiresAt,
       },
@@ -131,7 +143,7 @@ export async function GET(req: NextRequest) {
         category: "topic",
         mediaType: mediaType,
         params: topic,
-        data: results,
+        data: results as unknown as Prisma.InputJsonValue,
         refreshedAt: new Date(),
         expiresAt,
       },

@@ -499,7 +499,7 @@ export function AppHeader() {
                       onClick={() => setMobileOpen(false)}
                       className="rounded-md px-4 py-3 text-sm font-semibold uppercase tracking-wider text-text-secondary transition-all hover:border hover:border-secondary/30 hover:bg-secondary/5"
                     >
-                      {link.label}
+                      {t(link.key)}
                     </Link>
                   ))}
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tmdb } from "@/lib/tmdb";
+import { Prisma } from "@prisma/client";
 
 const CACHE_TTL_HOURS = 24;
 
@@ -25,7 +26,7 @@ async function getCachedOrFetch(
   const cached = await db.discoveryCache.findUnique({ where: { id: cacheId } });
 
   if (cached && cached.expiresAt > new Date()) {
-    return { data: cached.data as CachedItem[], refreshed: false };
+    return { data: cached.data as unknown as CachedItem[], refreshed: false };
   }
 
   if (fetchFn) {
@@ -35,7 +36,7 @@ async function getCachedOrFetch(
     await db.discoveryCache.upsert({
       where: { id: cacheId },
       update: {
-        data: freshData,
+        data: freshData as unknown as Prisma.InputJsonValue,
         refreshedAt: new Date(),
         expiresAt,
       },
@@ -44,7 +45,7 @@ async function getCachedOrFetch(
         category,
         mediaType,
         params: params || null,
-        data: freshData,
+        data: freshData as unknown as Prisma.InputJsonValue,
         refreshedAt: new Date(),
         expiresAt,
       },
@@ -54,7 +55,7 @@ async function getCachedOrFetch(
   }
 
   if (cached) {
-    return { data: cached.data as CachedItem[], refreshed: false };
+    return { data: cached.data as unknown as CachedItem[], refreshed: false };
   }
 
   return { data: [], refreshed: false };
@@ -82,25 +83,25 @@ export async function GET(req: NextRequest) {
     // Fetch all in parallel for better performance
     const fetchResults = await Promise.allSettled([
       getCachedOrFetch("trending", "all", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("all", "day", userApiKey))
+        transformTmdbResults(await tmdb.getTrending("all", "day", userApiKey)),
       ),
       getCachedOrFetch("trending", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("movie", "day", userApiKey))
+        transformTmdbResults(await tmdb.getTrending("movie", "day", userApiKey)),
       ),
       getCachedOrFetch("trending", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("tv", "day", userApiKey))
+        transformTmdbResults(await tmdb.getTrending("tv", "day", userApiKey)),
       ),
       getCachedOrFetch("toprated", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getTopRated("movie", userApiKey))
+        transformTmdbResults(await tmdb.getTopRated("movie", userApiKey)),
       ),
       getCachedOrFetch("toprated", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getTopRated("tv", userApiKey))
+        transformTmdbResults(await tmdb.getTopRated("tv", userApiKey)),
       ),
       getCachedOrFetch("new", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getNowPlaying(userApiKey))
+        transformTmdbResults(await tmdb.getNowPlaying(userApiKey)),
       ),
       getCachedOrFetch("airing", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getAiringToday(userApiKey))
+        transformTmdbResults(await tmdb.getAiringToday(userApiKey)),
       ),
     ]);
 

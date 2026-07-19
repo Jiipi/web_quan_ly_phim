@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tmdb } from "@/lib/tmdb";
+import { Prisma } from "@prisma/client";
 
 const CRON_SECRET = process.env.CRON_SECRET || process.env.CRON_API_KEY;
 
@@ -39,7 +40,7 @@ async function refreshCache(
   await db.discoveryCache.upsert({
     where: { id: cacheId },
     update: {
-      data: freshData,
+      data: freshData as unknown as Prisma.InputJsonValue,
       refreshedAt: new Date(),
       expiresAt,
     },
@@ -48,7 +49,7 @@ async function refreshCache(
       category,
       mediaType,
       params: params || null,
-      data: freshData,
+      data: freshData as unknown as Prisma.InputJsonValue,
       refreshedAt: new Date(),
       expiresAt,
     },
@@ -69,19 +70,26 @@ export async function POST(req: NextRequest) {
 
     const results = await Promise.allSettled([
       refreshCache("trending", "all", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("all", "day"))),
+        transformTmdbResults(await tmdb.getTrending("all", "day")),
+      ),
       refreshCache("trending", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("movie", "day"))),
+        transformTmdbResults(await tmdb.getTrending("movie", "day")),
+      ),
       refreshCache("trending", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getTrending("tv", "day"))),
+        transformTmdbResults(await tmdb.getTrending("tv", "day")),
+      ),
       refreshCache("toprated", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getTopRated("movie"))),
+        transformTmdbResults(await tmdb.getTopRated("movie")),
+      ),
       refreshCache("toprated", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getTopRated("tv"))),
+        transformTmdbResults(await tmdb.getTopRated("tv")),
+      ),
       refreshCache("new", "movie", undefined, async () =>
-        transformTmdbResults(await tmdb.getNowPlaying())),
+        transformTmdbResults(await tmdb.getNowPlaying()),
+      ),
       refreshCache("airing", "tv", undefined, async () =>
-        transformTmdbResults(await tmdb.getAiringToday())),
+        transformTmdbResults(await tmdb.getAiringToday()),
+      ),
     ]);
 
     const successful = results.filter((r) => r.status === "fulfilled").length;
