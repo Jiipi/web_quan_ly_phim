@@ -9,7 +9,6 @@ type Ctx = { params: Promise<{ id: string }> };
 // Chi tiết danh sách + phim bên trong. Cho phép chủ sở hữu HOẶC list công khai.
 export async function GET(_req: NextRequest, { params }: Ctx) {
   const userId = await getCurrentUserId();
-  if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
 
   const { id } = await params;
   const list = await db.customList.findUnique({
@@ -31,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
     name: list.name,
     description: list.description,
     isPublic: list.isPublic,
-    isOwner: list.userId === userId,
+    isOwner: userId ? list.userId === userId : false,
     items: list.items.map((it) => ({
       mediaItemId: it.mediaItemId,
       position: it.position,

@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Pencil,
   Save,
+  Bell,
+  Trash2,
 } from "lucide-react";
 import type { MediaDetail, DetailInitial } from "@/lib/media-detail";
 import { PosterImage } from "@/components/shared/PosterImage";
@@ -196,6 +198,65 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
   const [epInput, setEpInput] = useState(String(initial.currentEpisode));
   const [minuteInput, setMinuteInput] = useState(String(initial.currentMinute));
   const [currentTags, setCurrentTags] = useState(initial.tags ?? []);
+
+  // Reminders state & handlers
+  const [reminders, setReminders] = useState<
+    Array<{ id: string; remindAt: string; message: string }>
+  >([]);
+  const [selectedRemindDays, setSelectedRemindDays] = useState<number>(3);
+
+  useEffect(() => {
+    if (watchItemId) {
+      api
+        .get<{
+          reminders: Array<{ id: string; watchItemId: string; remindAt: string; message: string }>;
+        }>("/api/reminders")
+        .then((res) => {
+          if (res.success && res.data) {
+            const itemReminders = res.data.reminders.filter((r) => r.watchItemId === watchItemId);
+            setReminders(itemReminders);
+          }
+        });
+    } else {
+      const timer = setTimeout(() => {
+        setReminders([]);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [watchItemId]);
+
+  async function handleAddReminder() {
+    if (!watchItemId) return;
+    setBusy(true);
+    const res = await api.post<{
+      success: boolean;
+      reminder: { id: string; remindAt: string; message: string };
+    }>("/api/reminders", {
+      watchItemId,
+      remindInDays: selectedRemindDays,
+      message: `Đã đến lúc xem tiếp "${detail.title}"! 🍿`,
+    });
+    setBusy(false);
+    if (res.success && res.data && res.data.reminder) {
+      const newReminder = res.data.reminder;
+      success("Đã hẹn giờ nhắc nhở thành công!");
+      setReminders((prev) => [...prev, newReminder]);
+    } else {
+      toastError(res.error ?? "Không thể cài lịch nhắc.");
+    }
+  }
+
+  async function handleDeleteReminder(id: string) {
+    setBusy(true);
+    const res = await api.delete(`/api/reminders?id=${id}`);
+    setBusy(false);
+    if (res.success) {
+      success("Đã huỷ lịch nhắc nhở.");
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      toastError(res.error ?? "Không thể huỷ lịch nhắc.");
+    }
+  }
 
   async function addToLibrary(initialStatus: WatchStatus) {
     setBusy(true);
@@ -462,111 +523,186 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
         </div>
       </div>
 
-      {/* Timeline mốc thời gian — user tự chọn ngày bắt đầu/kết thúc/lần cuối. */}
+      {/* Timeline & Reminders Grid */}
       {inLibrary && (
-        <section
-          aria-label="Mốc thời gian theo dõi"
-          className="glass-card flex flex-wrap gap-x-8 gap-y-3 p-5"
-        >
-          {editingDates ? (
-            <div className="flex w-full flex-col gap-3">
-              <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
-                <DateField
-                  id="started-date"
-                  label="Bắt đầu xem"
-                  icon={<Play size={14} />}
-                  iconClass="bg-secondary/15 text-secondary"
-                  value={dateStarted}
-                  onChange={setDateStarted}
-                />
-                <DateField
-                  id="lastwatched-date"
-                  label="Lần xem cuối"
-                  icon={<Clock size={14} />}
-                  iconClass="bg-primary/15 text-primary"
-                  value={dateLastWatched}
-                  onChange={setDateLastWatched}
-                />
-                <DateField
-                  id="completed-date"
-                  label="Hoàn thành"
-                  icon={<CheckCircle2 size={14} />}
-                  iconClass="bg-emerald-500/15 text-emerald-400"
-                  value={dateCompleted}
-                  onChange={setDateCompleted}
-                />
-                <div className="flex items-center gap-2 ml-auto">
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Timeline mốc thời gian */}
+          <section
+            aria-label="Mốc thời gian theo dõi"
+            className="glass-card flex flex-wrap gap-x-8 gap-y-3 p-5 h-full relative"
+          >
+            {editingDates ? (
+              <div className="flex w-full flex-col gap-3">
+                <div className="flex flex-col gap-y-3">
+                  <DateField
+                    id="started-date"
+                    label="Bắt đầu xem"
+                    icon={<Play size={14} />}
+                    iconClass="bg-secondary/15 text-secondary"
+                    value={dateStarted}
+                    onChange={setDateStarted}
+                  />
+                  <DateField
+                    id="lastwatched-date"
+                    label="Lần xem cuối"
+                    icon={<Clock size={14} />}
+                    iconClass="bg-primary/15 text-primary"
+                    value={dateLastWatched}
+                    onChange={setDateLastWatched}
+                  />
+                  <DateField
+                    id="completed-date"
+                    label="Hoàn thành"
+                    icon={<CheckCircle2 size={14} />}
+                    iconClass="bg-emerald-500/15 text-emerald-400"
+                    value={dateCompleted}
+                    onChange={setDateCompleted}
+                  />
+                  <div className="flex items-center gap-2 mt-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingDates(false);
+                        setDateStarted(toDateInputValue(startedAt));
+                        setDateCompleted(toDateInputValue(completedAt));
+                        setDateLastWatched(toDateInputValue(lastWatchedAt));
+                      }}
+                      disabled={savingDates}
+                      className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-white/10 disabled:opacity-50"
+                    >
+                      Huỷ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveDates}
+                      disabled={savingDates}
+                      className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-glow-primary transition-all hover:bg-primary-hover disabled:opacity-60"
+                    >
+                      <Save size={12} /> {savingDates ? "Đang lưu..." : "Lưu"}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[9px] text-text-muted">
+                  Để trống = xoá mốc đó. Ngày sẽ lưu theo giờ địa phương của bạn.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 w-full justify-between h-full">
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-1">
+                    Mốc thời gian
+                  </h3>
+                  {startedAt && (
+                    <TimelineStat
+                      icon={<Play size={15} />}
+                      iconClass="bg-secondary/15 text-secondary"
+                      label="Bắt đầu xem"
+                      value={formatDate(startedAt)}
+                    />
+                  )}
+                  {lastWatchedAt && (
+                    <TimelineStat
+                      icon={<Clock size={15} />}
+                      iconClass="bg-primary/15 text-primary"
+                      label="Lần xem cuối"
+                      value={formatDate(lastWatchedAt)}
+                    />
+                  )}
+                  {completedAt && (
+                    <TimelineStat
+                      icon={<CheckCircle2 size={15} />}
+                      iconClass="bg-emerald-500/15 text-emerald-400"
+                      label="Hoàn thành"
+                      value={formatDate(completedAt)}
+                    />
+                  )}
+                  {!startedAt && !completedAt && !lastWatchedAt && (
+                    <span className="text-xs text-text-muted">
+                      {'Chưa có mốc thời gian nào. Bấm "Sửa" để thêm.'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-end mt-auto pt-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setEditingDates(false);
-                      // Reset về giá trị hiện tại khi huỷ.
-                      setDateStarted(toDateInputValue(startedAt));
-                      setDateCompleted(toDateInputValue(completedAt));
-                      setDateLastWatched(toDateInputValue(lastWatchedAt));
-                    }}
-                    disabled={savingDates}
-                    className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-white/10 disabled:opacity-50"
+                    onClick={() => setEditingDates(true)}
+                    className="inline-flex items-center gap-1 self-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary transition-all hover:bg-white/10 hover:text-white"
+                    aria-label="Sửa mốc thời gian"
                   >
-                    Huỷ
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveDates}
-                    disabled={savingDates}
-                    className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-glow-primary transition-all hover:bg-primary-hover disabled:opacity-60"
-                  >
-                    <Save size={12} /> {savingDates ? "Đang lưu..." : "Lưu"}
+                    <Pencil size={11} /> Sửa
                   </button>
                 </div>
               </div>
-              <p className="text-[10px] text-text-muted">
-                Để trống = xoá mốc đó. Ngày sẽ lưu theo giờ địa phương của bạn.
-              </p>
+            )}
+          </section>
+
+          {/* Reminders Section */}
+          <section className="glass-card p-5 flex flex-col gap-3 h-full relative justify-between">
+            <div className="flex flex-col gap-3 w-full">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-1 flex items-center gap-1.5">
+                <Bell size={13} className="text-primary" /> Nhắc nhở xem tiếp
+              </h3>
+
+              {reminders.length === 0 ? (
+                <div className="text-xs text-text-secondary leading-relaxed bg-white/5 border border-white/5 rounded-xl p-3">
+                  Bạn chưa lên lịch nhắc nhở cho phim này. Chọn số ngày bên dưới và bấm nút để cài
+                  lịch nhắc nhở.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reminders.map((rem) => (
+                    <div
+                      key={rem.id}
+                      className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl p-3"
+                    >
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-xs font-semibold text-text truncate">{rem.message}</p>
+                        <p className="text-[10px] text-text-muted mt-0.5">
+                          Nhắc lúc: {new Date(rem.remindAt).toLocaleString("vi-VN")}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteReminder(rem.id)}
+                        disabled={busy}
+                        aria-label="Huỷ nhắc nhở"
+                        className="rounded-full bg-white/5 hover:bg-dropped/10 text-text-muted hover:text-dropped p-1.5 transition-colors shrink-0 disabled:opacity-50"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <>
-              {startedAt && (
-                <TimelineStat
-                  icon={<Play size={15} />}
-                  iconClass="bg-secondary/15 text-secondary"
-                  label="Bắt đầu xem"
-                  value={formatDate(startedAt)}
-                />
-              )}
-              {lastWatchedAt && (
-                <TimelineStat
-                  icon={<Clock size={15} />}
-                  iconClass="bg-primary/15 text-primary"
-                  label="Lần xem cuối"
-                  value={formatDate(lastWatchedAt)}
-                />
-              )}
-              {completedAt && (
-                <TimelineStat
-                  icon={<CheckCircle2 size={15} />}
-                  iconClass="bg-emerald-500/15 text-emerald-400"
-                  label="Hoàn thành"
-                  value={formatDate(completedAt)}
-                />
-              )}
-              {/* Fallback khi chưa có mốc nào */}
-              {!startedAt && !completedAt && !lastWatchedAt && (
-                <span className="text-xs text-text-muted">
-                  {'Chưa có mốc thời gian nào. Bấm "Sửa" để thêm.'}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => setEditingDates(true)}
-                className="ml-auto inline-flex items-center gap-1 self-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary transition-all hover:bg-white/10 hover:text-white"
-                aria-label="Sửa mốc thời gian"
+
+            <div className="flex items-center gap-2 mt-auto pt-2 justify-end w-full">
+              <label
+                htmlFor="remind-days"
+                className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
               >
-                <Pencil size={11} /> Sửa
+                Nhắc sau:
+              </label>
+              <select
+                id="remind-days"
+                value={selectedRemindDays}
+                onChange={(e) => setSelectedRemindDays(Number(e.target.value))}
+                className="rounded-lg border border-white/8 bg-card p-1.5 text-xs text-text focus:outline-none"
+              >
+                <option value={1}>1 ngày</option>
+                <option value={3}>3 ngày</option>
+                <option value={7}>7 ngày</option>
+                <option value={14}>14 ngày</option>
+              </select>
+              <button
+                onClick={handleAddReminder}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-glow-primary transition-all hover:bg-primary-hover disabled:opacity-60"
+              >
+                <Plus size={12} /> Hẹn giờ
               </button>
-            </>
-          )}
-        </section>
+            </div>
+          </section>
+        </div>
       )}
 
       {/* TV progress / episode grid */}
