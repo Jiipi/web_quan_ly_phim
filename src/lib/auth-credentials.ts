@@ -7,6 +7,7 @@ export interface CredentialUserRecord {
   email: string | null;
   image: string | null;
   passwordHash: string | null;
+  role: string;
 }
 
 /** User trả về cho NextAuth sau khi xác thực thành công. */
@@ -15,6 +16,7 @@ export interface AuthorizedUser {
   name: string | null;
   email: string | null;
   image: string | null;
+  role: string;
 }
 
 /**
@@ -40,5 +42,5 @@ export async function authorizeCredentials(
   const ok = await verifyPassword(password, user.passwordHash);
   if (!ok) return null;
 
-  return { id: user.id, name: user.name, email: user.email, image: user.image };
+  return { id: user.id, name: user.name, email: user.email, image: user.image, role: user.role };
 }

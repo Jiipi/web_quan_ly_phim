@@ -13,6 +13,7 @@ beforeAll(async () => {
     email: EMAIL,
     image: null,
     passwordHash: await hashPassword(PASSWORD),
+    role: "user",
   };
 });
 

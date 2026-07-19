@@ -6,11 +6,11 @@ import { authConfig } from "@/auth.config";
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-  // Proxy chỉ chạy trên các route được bảo vệ (xem matcher bên dưới).
-  // Chưa đăng nhập -> chuyển về /login kèm callbackUrl để quay lại sau.
+  const pathname = req.nextUrl.pathname;
+
+  // 1. Chưa đăng nhập -> chuyển về /login kèm callbackUrl để quay lại sau.
   if (!req.auth) {
     // Cho phép khách truy cập trang chi tiết danh sách công khai
-    const pathname = req.nextUrl.pathname;
     const isListDetail = pathname.startsWith("/lists/") && pathname.split("/").length === 3;
     if (isListDetail) {
       return NextResponse.next();
@@ -22,6 +22,24 @@ export default auth((req) => {
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
+
+  // 2. Đã đăng nhập nhưng cố gắng truy cập route Admin mà không có role admin
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const role = (req.auth.user as Record<string, unknown>)?.role;
+    if (role !== "admin") {
+      if (pathname.startsWith("/api/")) {
+        return new NextResponse(JSON.stringify({ error: "Quyền truy cập bị từ chối." }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      const dashboardUrl = req.nextUrl.clone();
+      dashboardUrl.pathname = "/dashboard";
+      dashboardUrl.search = "";
+      return NextResponse.redirect(dashboardUrl);
+    }
+  }
+
   return NextResponse.next();
 });
 
@@ -41,5 +59,7 @@ export const config = {
     "/show/:path*",
     "/lists/:path*",
     "/onboarding/:path*",
+    "/admin/:path*",
+    "/api/admin/:path*",
   ],
 };
