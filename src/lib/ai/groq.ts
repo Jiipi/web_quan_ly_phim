@@ -1,6 +1,12 @@
-import { generateText } from "ai";
+import { generateText, streamText } from "ai";
 import { createGroq } from "@ai-sdk/groq";
-import { aiRecommendSchema, aiSummarySchema, aiTasteProfileSchema, type AIProvider } from "./types";
+import {
+  aiRecommendSchema,
+  aiSummarySchema,
+  aiTasteProfileSchema,
+  type AIProvider,
+  type AIChatInput,
+} from "./types";
 
 // llama-3.3-70b-versatile: chất lượng tiếng Việt tốt nhất free tier.
 // Tự generate text + parse JSON (Groq strict json_schema chỉ hỗ trợ trên
@@ -109,5 +115,20 @@ export const groqProvider: AIProvider = {
         `Trả về: profileText (nhận định gu, tiếng Việt), topGenres (mảng {genre, count}), topCountries (mảng {country, count}).`,
       aiTasteProfileSchema,
     );
+  },
+
+  async chat(input: AIChatInput): Promise<ReadableStream<string>> {
+    const groq = makeGroq();
+    const result = streamText({
+      model: groq(MODEL),
+      system: input.systemPrompt,
+      messages: input.messages.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+      temperature: 0.7,
+      maxOutputTokens: 1024,
+    });
+    return result.textStream;
   },
 };

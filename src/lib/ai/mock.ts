@@ -150,4 +150,22 @@ export const mockProvider: AIProvider = {
       topCountries,
     };
   },
+
+  async chat(input): Promise<ReadableStream<string>> {
+    const lastMsg = input.messages[input.messages.length - 1]?.content ?? "";
+    const mockReply =
+      `Xin chào! Bạn vừa hỏi: "${lastMsg.slice(0, 50)}". ` +
+      `Đây là trả lời mock từ CineBot AI. ` +
+      `Mình có thể giúp bạn tìm phim, gợi ý theo tâm trạng, hoặc tóm tắt phim không spoil. ` +
+      `Hãy kết nối Groq (miễn phí) hoặc OpenAI để nhận câu trả lời thật nhé! 🎬`;
+
+    return new ReadableStream<string>({
+      start(controller) {
+        for (const char of mockReply) {
+          controller.enqueue(char);
+        }
+        controller.close();
+      },
+    });
+  },
 };

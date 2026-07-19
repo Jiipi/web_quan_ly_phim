@@ -1,6 +1,12 @@
-import { generateObject } from "ai";
+import { generateObject, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { aiRecommendSchema, aiSummarySchema, aiTasteProfileSchema, type AIProvider } from "./types";
+import {
+  aiRecommendSchema,
+  aiSummarySchema,
+  aiTasteProfileSchema,
+  type AIProvider,
+  type AIChatInput,
+} from "./types";
 
 const MODEL = "gpt-4o-mini";
 
@@ -59,5 +65,19 @@ export const openaiProvider: AIProvider = {
         `Trả về: profileText (nhận định gu, tiếng Việt), topGenres (genre+count), topCountries (country+count).`,
     });
     return object;
+  },
+
+  async chat(input: AIChatInput): Promise<ReadableStream<string>> {
+    const result = streamText({
+      model: openai(MODEL),
+      system: input.systemPrompt,
+      messages: input.messages.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+      temperature: 0.7,
+      maxOutputTokens: 1024,
+    });
+    return result.textStream;
   },
 };

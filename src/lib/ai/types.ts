@@ -52,10 +52,22 @@ export interface AITasteProfileInput {
   ratedTitles: { title: string; score: number }[];
 }
 
-/** Giao diện chung cho mọi provider AI (mock / openai / google). */
+// ===== Chat (streaming) =====
+export interface AIChatMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+}
+
+export interface AIChatInput {
+  messages: AIChatMessage[];
+  systemPrompt: string;
+}
+
+/** Giao diện chung cho mọi provider AI (mock / openai / groq). */
 export interface AIProvider {
   readonly name: string;
   summarize(input: AISummaryInput): Promise<AISummaryResult>;
   recommend(input: AIRecommendInput): Promise<AIRecommendResult>;
   tasteProfile(input: AITasteProfileInput): Promise<AITasteProfileResult>;
+  chat(input: AIChatInput): Promise<ReadableStream<string>>;
 }

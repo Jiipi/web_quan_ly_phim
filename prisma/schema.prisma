@@ -35,6 +35,7 @@ model User {
   reminders     Reminder[]
   tasteProfile  TasteProfile?
   auditLogs     AuditLog[]
+  chatSessions  ChatSession[]
 }
 
 model Account {
@@ -457,4 +458,34 @@ model DiscoveryCache {
 
   @@index([category, mediaType])
   @@index([expiresAt])
+}
+
+// ==========================================
+// AI CHATBOT
+// ==========================================
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  userId    String
+  title     String?       // Auto-generated from first message
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id            String      @id @default(uuid())
+  chatSessionId String
+  role          String      // "user" | "assistant" | "system"
+  content       String      @db.Text
+  metadata      Json?       // Recommendations, TMDb links, etc.
+  createdAt     DateTime    @default(now())
+
+  chatSession   ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+
+  @@index([chatSessionId, createdAt])
 }

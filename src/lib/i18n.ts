@@ -96,6 +96,21 @@ const VI: Dict = {
   "theme.toggle.light": "Light",
   "theme.toggle.aria.dark": "Chuyển sang Light Mode",
   "theme.toggle.aria.light": "Chuyển sang Cinematic Dark",
+
+  // AI Chat
+  "chat.title": "CineBot AI",
+  "chat.placeholder": "Hỏi bất cứ điều gì về phim...",
+  "chat.send": "Gửi",
+  "chat.new": "Hội thoại mới",
+  "chat.history": "Lịch sử trò chuyện",
+  "chat.typing": "CineBot đang suy nghĩ...",
+  "chat.error": "Có lỗi xảy ra. Thử lại nhé.",
+  "chat.welcome": "Xin chào! Mình là CineBot 🤖 Hãy hỏi mình bất kỳ câu hỏi nào về phim nhé!",
+  "chat.suggest.today": "Gợi ý phim hôm nay 🎬",
+  "chat.suggest.korean": "Phim Hàn hay nhất? 🇰🇷",
+  "chat.suggest.chill": "Phim nhẹ nhàng, chữa lành 🌿",
+  "chat.suggest.similar": "Phim giống phim đang xem? 🍿",
+  "chat.delete-confirm": "Bạn có chắc chắn muốn xoá phiên chat này?",
 };
 
 const EN: Dict = {
@@ -180,6 +195,21 @@ const EN: Dict = {
   "theme.toggle.light": "Light",
   "theme.toggle.aria.dark": "Switch to Light Mode",
   "theme.toggle.aria.light": "Switch to Cinematic Dark",
+
+  // AI Chat
+  "chat.title": "CineBot AI",
+  "chat.placeholder": "Ask anything about movies...",
+  "chat.send": "Send",
+  "chat.new": "New Chat",
+  "chat.history": "Chat History",
+  "chat.typing": "CineBot is thinking...",
+  "chat.error": "An error occurred. Please try again.",
+  "chat.welcome": "Hello! I am CineBot 🤖 Ask me anything about movies!",
+  "chat.suggest.today": "Movie recommendation today 🎬",
+  "chat.suggest.korean": "Best Korean dramas? 🇰🇷",
+  "chat.suggest.chill": "Chill & healing movies 🌿",
+  "chat.suggest.similar": "Movies similar to what I'm watching? 🍿",
+  "chat.delete-confirm": "Are you sure you want to delete this chat session?",
 };
 
 const DICTS: Record<Lang, Dict> = { vi: VI, en: EN };
