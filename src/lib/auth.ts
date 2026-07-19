@@ -35,6 +35,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(db),
   providers,
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = ((user as unknown as Record<string, unknown>).role as string) || "user";
+      }
+      if (user?.id) {
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = (token.role as string) || "user";
+      }
+      return session;
+    },
+  },
   events: {
     async signIn({ user }) {
       if (user?.id) await logAudit(user.id, "auth.login");

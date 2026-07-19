@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Home,
   PlayCircle,
@@ -15,6 +16,7 @@ import {
   Settings,
   User,
   Layers,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 import { useLibrary } from "@/lib/use-library";
@@ -47,10 +49,16 @@ function detailHref(mediaType: "movie" | "tv", tmdbId: number) {
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as Record<string, unknown>)?.role === "admin";
   const { items } = useLibrary();
   const { openQuickAdd } = useQuickAdd();
   const [query, setQuery] = useState("");
   const [tmdbResults, setTmdbResults] = useState<TmdbResult[]>([]);
+
+  const navItems = isAdmin
+    ? [...NAV, { label: "Hệ thống Quản trị (Admin)", href: "/admin", icon: Shield }]
+    : NAV;
 
   // Tìm TMDb (debounce) khi gõ >= 2 ký tự. setState chỉ trong setTimeout/then.
   useEffect(() => {
@@ -79,7 +87,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }
 
   const q = query.trim().toLowerCase();
-  const navFiltered = q ? NAV.filter((n) => n.label.toLowerCase().includes(q)) : NAV;
+  const navFiltered = q ? navItems.filter((n) => n.label.toLowerCase().includes(q)) : navItems;
   const libFiltered = q
     ? items.filter((i) => i.mediaItem.title.toLowerCase().includes(q)).slice(0, 6)
     : [];

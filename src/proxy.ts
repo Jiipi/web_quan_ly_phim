@@ -25,7 +25,7 @@ export default auth((req) => {
 
   // 2. Đã đăng nhập nhưng cố gắng truy cập route Admin mà không có role admin
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const role = (req.auth.user as Record<string, unknown>)?.role;
+    const role = (req.auth.user as unknown as Record<string, unknown>)?.role;
     if (role !== "admin") {
       if (pathname.startsWith("/api/")) {
         return new NextResponse(JSON.stringify({ error: "Quyền truy cập bị từ chối." }), {

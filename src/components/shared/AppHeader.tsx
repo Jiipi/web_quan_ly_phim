@@ -22,6 +22,7 @@ import {
   Settings,
   LogOut,
   Terminal,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
@@ -55,6 +56,7 @@ export function AppHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
+  const isAdmin = (session?.user as Record<string, unknown>)?.role === "admin";
   const { t } = useT();
 
   const userName = session?.user?.name || "Người dùng";
@@ -210,6 +212,21 @@ export function AppHeader() {
                     </Link>
                   );
                 })}
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "relative flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200",
+                      pathname?.startsWith("/admin")
+                        ? "border border-primary/60 bg-primary/15 text-primary dark:shadow-[0_0_16px_var(--neon-pink-soft),inset_0_0_8px_oklch(0.72_0.32_330_/_0.25)]"
+                        : "text-primary hover:text-white hover:bg-primary/20 border border-primary/30",
+                    )}
+                  >
+                    <Shield size={14} className="animate-pulse" />
+                    Quản trị Admin
+                  </Link>
+                )}
               </nav>
             ) : (
               <nav className="hidden items-center gap-1 md:flex">
@@ -411,6 +428,19 @@ export function AppHeader() {
                         </p>
                       </div>
                       <div className="py-1">
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setIsDropdownOpen(false)}
+                            className={cn(
+                              "flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-bold transition-all text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 mb-1",
+                              pathname?.startsWith("/admin") && "shadow-glow-primary",
+                            )}
+                          >
+                            <Shield size={16} className="animate-pulse" />
+                            Quản trị Admin
+                          </Link>
+                        )}
                         {AUTH_SUB_NAV.map((item) => (
                           <Link
                             key={item.nameKey}
