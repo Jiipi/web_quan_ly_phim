@@ -59,7 +59,10 @@ export function TagManager({ open, onOpenChange, onTagChange }: TagManagerProps)
 
   useEffect(() => {
     if (open) {
-      fetchTags();
+      const timer = setTimeout(() => {
+        void fetchTags();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -131,7 +134,8 @@ export function TagManager({ open, onOpenChange, onTagChange }: TagManagerProps)
                   onClick={() => setNewTagColor(color)}
                   className={cn(
                     "w-6 h-6 rounded-full transition-transform hover:scale-110",
-                    newTagColor === color && "ring-2 ring-white ring-offset-2 ring-offset-background",
+                    newTagColor === color &&
+                      "ring-2 ring-white ring-offset-2 ring-offset-background",
                   )}
                   style={{ backgroundColor: color }}
                 />

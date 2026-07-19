@@ -37,6 +37,9 @@ export const openaiProvider: AIProvider = {
         `Gợi ý 3 phim cho người dùng. ` +
         `Gu thể loại: ${input.favGenres.join(", ") || "đa dạng"}. ` +
         `Quốc gia ưa thích: ${input.favCountries.join(", ") || "đa dạng"}. ` +
+        (input.preferTvShows
+          ? `Ưu tiên phim bộ (TV series) hơn phim lẻ (movie). `
+          : "Có thể gợi ý cả phim bộ lẫn phim lẻ. ") +
         (input.mood ? `Tâm trạng hiện tại: ${input.mood}. ` : "") +
         `Đã có trong thư viện (tránh trùng): ${input.libraryTitles.join(", ") || "chưa có"}. ` +
         `Mỗi gợi ý gồm title, reason (lý do hợp gu), matchScore (0-100). Viết bằng tiếng Việt.`,

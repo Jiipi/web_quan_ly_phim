@@ -24,13 +24,32 @@ export async function GET(req: NextRequest) {
     }
 
     const userApiKey = req.cookies.get("tmdb_api_key")?.value;
+    const serverKey = Boolean(process.env.TMDB_API_KEY);
+    const activeSource: "user" | "server" | "mock" = userApiKey
+      ? "user"
+      : serverKey
+        ? "server"
+        : "mock";
 
-    const results = await tmdb.search(query, type, userApiKey);
-    return NextResponse.json(results);
-  } catch (err: unknown) {
-    console.error("TMDb Route Search Error:", err);
-    const message = err instanceof Error ? err.message : "Không thể tìm kiếm phim.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    try {
+      const results = await tmdb.search(query, type, userApiKey);
+      return NextResponse.json(results, {
+        headers: { "X-TMDb-Source": activeSource },
+      });
+    } catch (err) {
+      console.error("TMDb Route Search Error:", err);
+      const message = err instanceof Error ? err.message : "Không thể tìm kiếm phim.";
+      return NextResponse.json(
+        { error: message, results: [] },
+        {
+          status: 500,
+          headers: { "X-TMDb-Source": activeSource },
+        },
+      );
+    }
+  } catch (error) {
+    console.error("TMDb Route Outer Error:", error);
+    return NextResponse.json({ error: "Lỗi máy chủ nội bộ." }, { status: 500 });
   }
 }
 

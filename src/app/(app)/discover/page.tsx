@@ -66,47 +66,50 @@ export default function DiscoverPage() {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   // Fetch topic-specific results
-  const fetchTopicResults = useCallback(async (topics: string[]) => {
-    if (topics.length === 0) {
-      setTopicResults([]);
-      return;
-    }
-
-    setIsLoadingTopic(true);
-    try {
-      const allResults: DiscoverResult[] = [];
-      
-      for (const topic of topics) {
-        const res = await api.get<{ success: boolean; topic: string; results: DiscoverResult[] }>(
-          `/api/discover/topics?topic=${encodeURIComponent(topic)}&mediaType=${mediaType}`
-        );
-        console.log("Topic API response:", topic, res);
-        if (res.success && res.data?.results) {
-          allResults.push(...res.data.results);
-        }
+  const fetchTopicResults = useCallback(
+    async (topics: string[]) => {
+      if (topics.length === 0) {
+        setTopicResults([]);
+        return;
       }
 
-      console.log("All results before dedup:", allResults.length);
+      setIsLoadingTopic(true);
+      try {
+        const allResults: DiscoverResult[] = [];
 
-      console.log("All results before dedup:", allResults.length);
+        for (const topic of topics) {
+          const res = await api.get<{ success: boolean; topic: string; results: DiscoverResult[] }>(
+            `/api/discover/topics?topic=${encodeURIComponent(topic)}&mediaType=${mediaType}`,
+          );
+          console.log("Topic API response:", topic, res);
+          if (res.success && res.data?.results) {
+            allResults.push(...res.data.results);
+          }
+        }
 
-      // Deduplicate by tmdbId
-      const seen = new Set<number>();
-      const unique = allResults.filter((r) => {
-        if (seen.has(r.tmdbId)) return false;
-        seen.add(r.tmdbId);
-        return true;
-      });
+        console.log("All results before dedup:", allResults.length);
 
-      console.log("Unique results after dedup:", unique.length);
-      setTopicResults(unique);
-    } catch (err) {
-      console.error("Failed to fetch topic results:", err);
-      setTopicResults([]);
-    } finally {
-      setIsLoadingTopic(false);
-    }
-  }, [mediaType]);
+        console.log("All results before dedup:", allResults.length);
+
+        // Deduplicate by tmdbId
+        const seen = new Set<number>();
+        const unique = allResults.filter((r) => {
+          if (seen.has(r.tmdbId)) return false;
+          seen.add(r.tmdbId);
+          return true;
+        });
+
+        console.log("Unique results after dedup:", unique.length);
+        setTopicResults(unique);
+      } catch (err) {
+        console.error("Failed to fetch topic results:", err);
+        setTopicResults([]);
+      } finally {
+        setIsLoadingTopic(false);
+      }
+    },
+    [mediaType],
+  );
 
   // Fetch topic results when topics or mediaType changes
   useEffect(() => {
@@ -121,7 +124,7 @@ export default function DiscoverPage() {
     setIsLoadingDiscovery(true);
     try {
       const res = await api.get<DiscoveryData & { success: boolean }>(
-        `/api/discover${forceRefresh ? "?refresh=true" : ""}`
+        `/api/discover${forceRefresh ? "?refresh=true" : ""}`,
       );
       if (res.success && res.data) {
         setDiscovery(res.data as DiscoveryData);
@@ -135,7 +138,10 @@ export default function DiscoverPage() {
   }, []);
 
   useEffect(() => {
-    fetchDiscovery();
+    const timer = setTimeout(() => {
+      void fetchDiscovery();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchDiscovery]);
 
   useEffect(() => {
@@ -303,10 +309,7 @@ export default function DiscoverPage() {
               <div className="mb-4 h-3 w-32 rounded bg-white/5" />
               <div className="flex gap-4 overflow-hidden">
                 {[1, 2, 3, 4, 5].map((j) => (
-                  <div
-                    key={j}
-                    className="h-52 w-36 shrink-0 rounded-lg bg-white/5"
-                  />
+                  <div key={j} className="h-52 w-36 shrink-0 rounded-lg bg-white/5" />
                 ))}
               </div>
             </div>

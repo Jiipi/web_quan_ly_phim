@@ -16,6 +16,7 @@ import {
   Plus,
   Tags,
   Settings,
+  Clock,
 } from "lucide-react";
 import { MovieGrid } from "@/components/shared/MovieGrid";
 import { StatusBadge, type WatchStatus } from "@/components/shared/StatusBadge";
@@ -35,7 +36,7 @@ import { useLibrary, type LibraryItem } from "@/lib/use-library";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { api } from "@/lib/api";
-import { formatDate, cn } from "@/lib/utils";
+import { formatDate, formatRelativeTime, cn } from "@/lib/utils";
 import { countryLabel, STATUS_FILTER_OPTIONS } from "@/lib/labels";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
 import { TagAssignment } from "@/components/tags/TagAssignment";
@@ -77,33 +78,39 @@ export default function LibraryPage() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    
+
     // Mappings for topic filter matching
     const TOPIC_COUNTRY_MAPPING: Record<string, string> = {
       "Trung Quốc": "CN",
       "Hàn Quốc": "KR",
       "Việt Nam": "VN",
       "Nhật Bản": "JP",
-      "Mỹ": "US",
+      Mỹ: "US",
       "Thái Lan": "TH",
       "Ấn Độ": "IN",
     };
 
     const TOPIC_GENRE_MAPPING: Record<string, string[]> = {
-      "Drama": ["Drama", "Chính kịch", "Tâm lý", "Phim truyền hình"],
+      Drama: ["Drama", "Chính kịch", "Tâm lý", "Phim truyền hình"],
       "Hành động": ["Action", "Hành động", "Phim hành động"],
       "Kinh dị": ["Horror", "Kinh dị", "Thriller", "Gây cấn", "Bí ẩn", "Giật gân"],
-      "Hài": ["Comedy", "Hài", "Hài kịch", "Phim hài"],
+      Hài: ["Comedy", "Hài", "Hài kịch", "Phim hài"],
       "Lãng mạn": ["Romance", "Lãng mạn", "Tình cảm", "Phim lãng mạn"],
-      "Khoa học viễn tưởng": ["Sci-Fi", "Science Fiction", "Khoa học viễn tưởng", "Viễn tưởng", "Phim viễn tưởng"],
+      "Khoa học viễn tưởng": [
+        "Sci-Fi",
+        "Science Fiction",
+        "Khoa học viễn tưởng",
+        "Viễn tưởng",
+        "Phim viễn tưởng",
+      ],
       "Giả tưởng": ["Fantasy", "Giả tưởng", "Thần thoại", "Kỳ ảo"],
       "Chiến tranh": ["War", "Chiến tranh", "Phim chiến tranh"],
       "Phiêu lưu": ["Adventure", "Phiêu lưu", "Phim phiêu lưu"],
       "Trinh thám": ["Mystery", "Trinh thám", "Bí ẩn"],
-      "Documentary": ["Documentary", "Tài liệu", "Phim tài liệu"],
-      "Kids": ["Kids", "Trẻ em", "Gia đình", "Family", "Phim trẻ em"],
+      Documentary: ["Documentary", "Tài liệu", "Phim tài liệu"],
+      Kids: ["Kids", "Trẻ em", "Gia đình", "Family", "Phim trẻ em"],
       "Hoạt hình": ["Animation", "Hoạt hình", "Phim hoạt hình"],
-      "Anime": ["Animation", "Hoạt hình", "Anime"],
+      Anime: ["Animation", "Hoạt hình", "Anime"],
     };
 
     let result = items.filter((item) => {
@@ -113,11 +120,11 @@ export default function LibraryPage() {
       const matchesStatus = selectedStatus === "all" || item.status === selectedStatus;
       const matchesCountry =
         selectedCountry === "all" || item.mediaItem.countries?.includes(selectedCountry);
-      
+
       const itemTagIds = item.tags.map((t) => t.tagId);
       const matchesTags =
         selectedTags.length === 0 || selectedTags.some((tagId) => itemTagIds.includes(tagId));
-      
+
       const itemTagNames = item.tags.map((t) => t.tag.name);
       const matchesTopics =
         selectedTopics.length === 0 ||
@@ -131,10 +138,15 @@ export default function LibraryPage() {
 
           // 3. Khớp theo thể loại của phim
           const genresToMatch = TOPIC_GENRE_MAPPING[topic];
-          if (genresToMatch && item.mediaItem.genres?.some((g) => genresToMatch.includes(g))) return true;
+          if (genresToMatch && item.mediaItem.genres?.some((g) => genresToMatch.includes(g)))
+            return true;
 
           // 4. Các trường hợp đặc biệt khác (như Anime)
-          if (topic === "Anime" && item.mediaItem.genres?.includes("Animation") && item.mediaItem.countries?.includes("JP")) {
+          if (
+            topic === "Anime" &&
+            item.mediaItem.genres?.includes("Animation") &&
+            item.mediaItem.countries?.includes("JP")
+          ) {
             return true;
           }
 
@@ -312,13 +324,11 @@ export default function LibraryPage() {
               <TagChip
                 key={tagId}
                 tagId={tagId}
-                tagName={items
-                  .flatMap((i) => i.tags)
-                  .find((t) => t.tagId === tagId)?.tag.name ?? ""}
+                tagName={
+                  items.flatMap((i) => i.tags).find((t) => t.tagId === tagId)?.tag.name ?? ""
+                }
                 tagColor={
-                  items
-                    .flatMap((i) => i.tags)
-                    .find((t) => t.tagId === tagId)?.tag.color ?? "#888"
+                  items.flatMap((i) => i.tags).find((t) => t.tagId === tagId)?.tag.color ?? "#888"
                 }
                 onRemove={() => setSelectedTags(selectedTags.filter((id) => id !== tagId))}
               />
@@ -479,7 +489,9 @@ export default function LibraryPage() {
       )}
 
       {!loading && !error && filtered.length > 0 && viewMode === "grid" && (
-        <MovieGrid items={filtered.map(cardProps)} showQuickActions />
+        // showQuickActions tắt: phim trong thư viện đã có trạng thái rõ ràng,
+        // không cần nút Thêm; click card = mở trang chi tiết.
+        <MovieGrid items={filtered.map(cardProps)} />
       )}
 
       {!loading && !error && filtered.length > 0 && viewMode === "list" && (
@@ -514,19 +526,34 @@ export default function LibraryPage() {
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-bold">{item.mediaItem.title}</h3>
                 <p className="truncate text-xs text-text-muted">{item.mediaItem.originalTitle}</p>
-                <div className="mt-1 flex items-center gap-2 text-[10px] text-text-secondary">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-text-secondary">
                   <span>{countryLabel(item.mediaItem.countries?.[0])}</span>
                   <span>·</span>
                   <span>{item.mediaItem.genres.slice(0, 2).join(", ")}</span>
+                  {item.lastWatchedAt && (
+                    <>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1 text-text-muted">
+                        <Clock className="h-2.5 w-2.5" />
+                        Xem cách đây {formatRelativeTime(item.lastWatchedAt)}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1.5">
                 <StatusBadge status={item.status as WatchStatus} />
-                {item.mediaItem.mediaType === "tv" && (
-                  <span className="font-mono text-[10px] text-text-secondary">
-                    Tập {item.currentEpisode}/{item.totalEpisodes}
-                  </span>
-                )}
+                {item.mediaItem.mediaType === "tv" &&
+                  item.currentEpisode > 0 &&
+                  (item.totalEpisodes > 0 ? (
+                    <span className="font-mono text-[10px] text-text-secondary">
+                      Tập {item.currentEpisode}/{item.totalEpisodes}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[10px] text-text-secondary">
+                      Tập {item.currentEpisode}
+                    </span>
+                  ))}
                 {item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 justify-end">
                     {item.tags.slice(0, 2).map((mt) => (
@@ -618,7 +645,11 @@ export default function LibraryPage() {
                     </td>
                     <td className="p-3 font-mono">
                       {item.mediaItem.mediaType === "tv"
-                        ? `${item.currentEpisode}/${item.totalEpisodes}`
+                        ? item.totalEpisodes > 0
+                          ? `${item.currentEpisode}/${item.totalEpisodes}`
+                          : item.currentEpisode > 0
+                            ? `${item.currentEpisode}`
+                            : "—"
                         : "Phim lẻ"}
                     </td>
                     <td className="p-3 text-text-secondary">{formatDate(item.lastWatchedAt)}</td>
@@ -642,11 +673,7 @@ export default function LibraryPage() {
       )}
 
       {/* Tag Manager Dialog */}
-      <TagManager
-        open={showTagManager}
-        onOpenChange={setShowTagManager}
-        onTagChange={reload}
-      />
+      <TagManager open={showTagManager} onOpenChange={setShowTagManager} onTagChange={reload} />
     </FadeIn>
   );
 }

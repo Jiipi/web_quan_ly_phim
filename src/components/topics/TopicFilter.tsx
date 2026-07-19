@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { Tag, X, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -43,7 +39,10 @@ export function TopicFilter({ selectedTopics, onTopicsChange, showAll = false }:
 
   useEffect(() => {
     if (open) {
-      fetchTopics();
+      const timer = setTimeout(() => {
+        void fetchTopics();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -71,10 +70,7 @@ export function TopicFilter({ selectedTopics, onTopicsChange, showAll = false }:
         <Button
           variant="outline"
           size="sm"
-          className={cn(
-            "gap-2 h-9",
-            selectedTopics.length > 0 && "border-primary bg-primary/10"
-          )}
+          className={cn("gap-2 h-9", selectedTopics.length > 0 && "border-primary bg-primary/10")}
         >
           <Tag className="w-4 h-4" />
           Chủ đề
@@ -91,12 +87,7 @@ export function TopicFilter({ selectedTopics, onTopicsChange, showAll = false }:
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Lọc theo Chủ đề</span>
             {selectedTopics.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearTopics}
-                className="h-7 text-xs"
-              >
+              <Button variant="ghost" size="sm" onClick={clearTopics} className="h-7 text-xs">
                 Xóa lọc
               </Button>
             )}
@@ -122,7 +113,7 @@ export function TopicFilter({ selectedTopics, onTopicsChange, showAll = false }:
                           "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all",
                           isSelected
                             ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card hover:border-primary/50 hover:bg-surface"
+                            : "border-border bg-card hover:border-primary/50 hover:bg-surface",
                         )}
                       >
                         {topic.icon && <span>{topic.icon}</span>}
@@ -150,7 +141,7 @@ export function TopicFilter({ selectedTopics, onTopicsChange, showAll = false }:
                             "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all",
                             isSelected
                               ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card hover:border-primary/50 hover:bg-surface"
+                              : "border-border bg-card hover:border-primary/50 hover:bg-surface",
                           )}
                         >
                           <span
@@ -184,27 +175,27 @@ export function TopicChips({
 
   // Get topic data
   const topicData: Record<string, { color: string; icon?: string }> = {
-    "Anime": { color: "#7C3AED", icon: "🎌" },
+    Anime: { color: "#7C3AED", icon: "🎌" },
     "Hoạt hình": { color: "#2563EB", icon: "🎨" },
     "Trung Quốc": { color: "#DC2626", icon: "🇨🇳" },
     "Hàn Quốc": { color: "#0D9488", icon: "🇰🇷" },
     "Việt Nam": { color: "#CA8A04", icon: "🇻🇳" },
     "Nhật Bản": { color: "#DB2777", icon: "🇯🇵" },
-    "Mỹ": { color: "#2563EB", icon: "🇺🇸" },
+    Mỹ: { color: "#2563EB", icon: "🇺🇸" },
     "Thái Lan": { color: "#7C3AED", icon: "🇹🇭" },
     "Ấn Độ": { color: "#EA580C", icon: "🇮🇳" },
-    "Drama": { color: "#16A34A", icon: "🎭" },
+    Drama: { color: "#16A34A", icon: "🎭" },
     "Hành động": { color: "#DC2626", icon: "💥" },
     "Kinh dị": { color: "#7C3AED", icon: "👻" },
-    "Hài": { color: "#CA8A04", icon: "😂" },
+    Hài: { color: "#CA8A04", icon: "😂" },
     "Lãng mạn": { color: "#DB2777", icon: "❤️" },
     "Khoa học viễn tưởng": { color: "#2563EB", icon: "🚀" },
     "Giả tưởng": { color: "#7C3AED", icon: "🧙" },
     "Chiến tranh": { color: "#6B7280", icon: "⚔️" },
     "Phiêu lưu": { color: "#16A34A", icon: "🗺️" },
     "Trinh thám": { color: "#0D9488", icon: "🔍" },
-    "Documentary": { color: "#6B7280", icon: "📽️" },
-    "Kids": { color: "#CA8A04", icon: "👶" },
+    Documentary: { color: "#6B7280", icon: "📽️" },
+    Kids: { color: "#CA8A04", icon: "👶" },
   };
 
   return (

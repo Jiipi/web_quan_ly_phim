@@ -1,9 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { RatingDisplay } from "@/components/shared/RatingDisplay";
 import { RATING_ASPECTS, type RatingAspectKey } from "@/lib/rating-schema";
+import { SCALE_CONFIG, from10, to10, formatScore, type RatingScale } from "@/lib/rating-scale";
+import { readRatingScale } from "@/lib/use-preferences";
 import { useToast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
 
@@ -26,7 +28,8 @@ interface RatingRow extends Partial<Aspects> {
 export function RatingReviewPanel({ watchItemId }: { watchItemId: string }) {
   const { success, error: toastError } = useToast();
 
-  const [overall, setOverall] = useState(8);
+  const [scale, setScale] = useState<RatingScale>("10");
+  const [overall, setOverall] = useState(8); // lưu dạng 1-10
   const [showDetail, setShowDetail] = useState(false);
   const [aspects, setAspects] = useState<Aspects>(DEFAULT_ASPECTS);
   const [rewatch, setRewatch] = useState(false);
@@ -35,7 +38,21 @@ export function RatingReviewPanel({ watchItemId }: { watchItemId: string }) {
   const [savingRating, setSavingRating] = useState(false);
   const [savingReview, setSavingReview] = useState(false);
 
-  // Nạp đánh giá + review đã lưu (chỉ setState sau khi promise resolve).
+  // Lắng nghe thay đổi ratingScale (Settings có thể đổi realtime).
+  useEffect(() => {
+    const nextScale = readRatingScale();
+    const timer = setTimeout(() => {
+      setScale(nextScale);
+    }, 0);
+    const onStorage = () => setScale(readRatingScale());
+    window.addEventListener("storage", onStorage);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
+  // Nạp đánh giá + review đã lưu.
   useEffect(() => {
     let active = true;
     Promise.all([
@@ -105,6 +122,9 @@ export function RatingReviewPanel({ watchItemId }: { watchItemId: string }) {
     else toastError(res.error ?? "Không thể lưu review.");
   }
 
+  const cfg = SCALE_CONFIG[scale];
+  const displayOverall = from10(overall, scale);
+
   return (
     <section className="glass-card flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between border-b border-white/5 pb-3">
@@ -116,16 +136,16 @@ export function RatingReviewPanel({ watchItemId }: { watchItemId: string }) {
       <div className="flex flex-col gap-1.5 text-xs">
         <label htmlFor="overall" className="flex justify-between font-semibold text-text">
           <span>Điểm tổng</span>
-          <span className="font-mono text-secondary">{overall}/10</span>
+          <span className="font-mono text-secondary">{formatScore(overall, scale)}</span>
         </label>
         <input
           id="overall"
           type="range"
-          min={1}
-          max={10}
-          step={1}
-          value={overall}
-          onChange={(e) => setOverall(Number(e.target.value))}
+          min={cfg.step}
+          max={cfg.max}
+          step={cfg.step}
+          value={displayOverall}
+          onChange={(e) => setOverall(to10(Number(e.target.value), scale))}
           className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-secondary"
         />
       </div>
@@ -146,16 +166,21 @@ export function RatingReviewPanel({ watchItemId }: { watchItemId: string }) {
             <div key={key} className="flex flex-col gap-1 text-xs">
               <label htmlFor={key} className="flex justify-between font-medium text-text-secondary">
                 <span>{label}</span>
-                <span className="font-mono">{aspects[key]}/10</span>
+                <span className="font-mono">{formatScore(aspects[key], scale)}</span>
               </label>
               <input
                 id={key}
                 type="range"
-                min={1}
-                max={10}
-                step={1}
-                value={aspects[key]}
-                onChange={(e) => setAspects((a) => ({ ...a, [key]: Number(e.target.value) }))}
+                min={cfg.step}
+                max={cfg.max}
+                step={cfg.step}
+                value={from10(aspects[key], scale)}
+                onChange={(e) =>
+                  setAspects((a) => ({
+                    ...a,
+                    [key]: to10(Number(e.target.value), scale),
+                  }))
+                }
                 className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-primary"
               />
             </div>

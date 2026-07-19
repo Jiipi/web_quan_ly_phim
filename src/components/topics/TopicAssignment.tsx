@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tag, X, Check } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -42,7 +38,10 @@ export function TopicAssignment({ watchItemId, currentTopics, onUpdate }: TopicA
 
   useEffect(() => {
     if (open) {
-      fetchTopics();
+      const timer = setTimeout(() => {
+        void fetchTopics();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -70,12 +69,7 @@ export function TopicAssignment({ watchItemId, currentTopics, onUpdate }: TopicA
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 h-8 px-2"
-          title="Gán chủ đề"
-        >
+        <Button variant="ghost" size="sm" className="gap-1.5 h-8 px-2" title="Gán chủ đề">
           <Tag className="w-3.5 h-3.5" />
           <span className="text-xs">Chủ đề</span>
           {currentTopics.length > 0 && (
@@ -122,7 +116,7 @@ export function TopicAssignment({ watchItemId, currentTopics, onUpdate }: TopicA
                           isAssigned
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-border bg-card hover:border-primary/50 hover:bg-surface",
-                          isSaving && "opacity-50 cursor-wait"
+                          isSaving && "opacity-50 cursor-wait",
                         )}
                       >
                         {topic.icon && <span>{topic.icon}</span>}
@@ -158,7 +152,7 @@ export function TopicAssignment({ watchItemId, currentTopics, onUpdate }: TopicA
                             isAssigned
                               ? "border-primary bg-primary text-primary-foreground"
                               : "border-border bg-card hover:border-primary/50 hover:bg-surface",
-                            isSaving && "opacity-50 cursor-wait"
+                            isSaving && "opacity-50 cursor-wait",
                           )}
                         >
                           <span

@@ -100,8 +100,15 @@ export async function POST(req: NextRequest) {
     await logAudit(userId, "ai.summary", { watchItemId: watchItem.id }, clientIp(req));
     return NextResponse.json({ success: true, provider: provider.name, summary });
   } catch (err: unknown) {
-    console.error("AI Summary Route Error:", err);
-    return NextResponse.json({ error: "Không thể tạo tóm tắt AI." }, { status: 500 });
+    const detail = err instanceof Error ? `${err.name}: ${err.message}` : JSON.stringify(err);
+    console.error("AI Summary Route Error:", detail);
+    return NextResponse.json(
+      {
+        error: "Không thể tạo tóm tắt AI.",
+        detail: process.env.NODE_ENV === "production" ? undefined : detail,
+      },
+      { status: 500 },
+    );
   }
 }
 

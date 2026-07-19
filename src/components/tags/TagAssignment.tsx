@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tag } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -42,7 +38,10 @@ export function TagAssignment({ watchItemId, currentTags, onUpdate }: TagAssignm
 
   useEffect(() => {
     if (open) {
-      fetchTags();
+      const timer = setTimeout(() => {
+        void fetchTags();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -67,12 +66,7 @@ export function TagAssignment({ watchItemId, currentTags, onUpdate }: TagAssignm
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 h-8 px-2"
-          title="Gán tags"
-        >
+        <Button variant="ghost" size="sm" className="gap-1.5 h-8 px-2" title="Gán tags">
           <Tag className="w-3.5 h-3.5" />
           <span className="text-xs">Tags</span>
           {currentTags.length > 0 && (
@@ -114,10 +108,8 @@ export function TagAssignment({ watchItemId, currentTags, onUpdate }: TagAssignm
                     disabled={isLoading}
                     className={cn(
                       "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
-                      isAssigned
-                        ? "bg-primary/20 text-primary"
-                        : "hover:bg-surface",
-                      isLoading && "opacity-50 cursor-wait"
+                      isAssigned ? "bg-primary/20 text-primary" : "hover:bg-surface",
+                      isLoading && "opacity-50 cursor-wait",
                     )}
                   >
                     <div

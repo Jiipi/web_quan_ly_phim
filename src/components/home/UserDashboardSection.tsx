@@ -185,7 +185,6 @@ export function UserDashboardSection() {
               title="Tiếp tục xem dở"
               subtitle={watching.length > 0 ? `${watching.length} phim đang theo dõi` : undefined}
               items={watching.map((i) => toCardProps(i))}
-              showQuickActions
               emptyMessage="Chưa có phim nào đang theo dõi. Bấm Thêm nhanh để bắt đầu."
             />
 
@@ -211,7 +210,8 @@ export function UserDashboardSection() {
                   </CardContent>
                 </Card>
               ) : (
-                <MovieGrid items={items.slice(0, 8).map((i) => toCardProps(i))} showQuickActions />
+                // showQuickActions tắt: phim ở dashboard đã có trong thư viện.
+                <MovieGrid items={items.slice(0, 8).map((i) => toCardProps(i))} />
               )}
             </section>
           </div>

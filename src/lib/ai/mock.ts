@@ -10,12 +10,35 @@ import type {
 
 // Pool gợi ý cho mock. Một số tựa trùng catalog TMDb mock (Chiếc Bật Lửa, Người Dơi)
 // nên resolve được tmdbId -> "Thêm watchlist" chạy end-to-end ngay cả khi offline.
-const RECOMMEND_POOL: { title: string }[] = [
-  { title: "Chiếc Bật Lửa Và Váy Công Chúa" },
-  { title: "Hạ Cánh Nơi Anh" },
-  { title: "Reply 1988" },
-  { title: "Điều Kỳ Diệu Ở Phòng Giam Số 7" },
-  { title: "Người Dơi" },
+//
+// Mỗi entry mang metadata: kind (tv/movie), genres, country — để chấm điểm theo
+// favGenres / favCountries / preferTvShows của user. Càng trùng gu càng cao điểm.
+interface PoolEntry {
+  title: string;
+  kind: "tv" | "movie";
+  genres: string[];
+  country: string;
+}
+const RECOMMEND_POOL: PoolEntry[] = [
+  {
+    title: "Chiếc Bật Lửa Và Váy Công Chúa",
+    kind: "tv",
+    genres: ["Romance", "Drama"],
+    country: "KR",
+  },
+  { title: "Hạ Cánh Nơi Anh", kind: "tv", genres: ["Romance", "Drama"], country: "KR" },
+  { title: "Reply 1988", kind: "tv", genres: ["Drama", "Comedy"], country: "KR" },
+  { title: "Điều Kỳ Diệu Ở Phòng Giam Số 7", kind: "movie", genres: ["Drama"], country: "KR" },
+  { title: "Người Dơi", kind: "movie", genres: ["Action", "Sci-Fi"], country: "US" },
+  { title: "Interstellar", kind: "movie", genres: ["Sci-Fi", "Drama"], country: "US" },
+  { title: "Inception", kind: "movie", genres: ["Action", "Sci-Fi"], country: "US" },
+  { title: "Parasite", kind: "movie", genres: ["Thriller", "Drama"], country: "KR" },
+  { title: "Avengers: Endgame", kind: "movie", genres: ["Action", "Sci-Fi"], country: "US" },
+  { title: "Coco", kind: "movie", genres: ["Animation", "Drama"], country: "US" },
+  { title: "Your Name", kind: "movie", genres: ["Animation", "Romance"], country: "JP" },
+  { title: "Spirited Away", kind: "movie", genres: ["Animation", "Fantasy"], country: "JP" },
+  { title: "Oldboy", kind: "movie", genres: ["Thriller", "Mystery"], country: "KR" },
+  { title: "Train to Busan", kind: "movie", genres: ["Horror", "Action"], country: "KR" },
 ];
 
 function topCounts(items: string[]): { key: string; count: number }[] {
@@ -58,17 +81,52 @@ export const mockProvider: AIProvider = {
           l.toLowerCase().includes(title.toLowerCase()) ||
           title.toLowerCase().includes(l.toLowerCase()),
       );
-    // Ưu tiên tựa chưa có trong thư viện; nếu không đủ thì lấy thêm từ pool.
-    const fresh = RECOMMEND_POOL.filter((p) => !inLibrary(p.title));
-    const chosen = (fresh.length >= 2 ? fresh : RECOMMEND_POOL).slice(0, 3);
-    const genre = input.favGenres.join(", ") || "đa dạng";
-    const moodPart = input.mood ? ` hợp tâm trạng "${input.mood}"` : "";
+
+    const favGenresLower = input.favGenres.map((g) => g.toLowerCase());
+    const favCountriesUpper = input.favCountries.map((c) => c.toUpperCase());
+
+    // Chấm điểm từng entry theo độ trùng với gu người dùng.
+    // - genres trùng: +25 mỗi cái (cap 50)
+    // - country trùng: +15
+    // - đúng kind (tv/movie) theo preferTvShows: +15
+    // - có trong thư viện: loại bỏ
+    type Scored = PoolEntry & { score: number };
+    const scored: Scored[] = RECOMMEND_POOL.filter((p) => !inLibrary(p.title)).map((p) => {
+      let score = 50; // baseline
+      const matchedGenres = p.genres.filter((g) => favGenresLower.includes(g.toLowerCase()));
+      score += Math.min(matchedGenres.length, 2) * 25;
+      if (favCountriesUpper.includes(p.country.toUpperCase())) score += 15;
+      if (input.preferTvShows && p.kind === "tv") score += 15;
+      if (input.preferTvShows === false && p.kind === "movie") score += 5;
+      return { ...p, score };
+    });
+
+    // Xếp giảm dần, lấy top 3.
+    scored.sort((a, b) => b.score - a.score);
+    const chosen = scored.slice(0, 3);
+    const max = chosen[0]?.score ?? 50;
+    const min = chosen[chosen.length - 1]?.score ?? 50;
+    const range = Math.max(max - min, 1);
+
+    const genreLabel = input.favGenres.join(", ") || "đa dạng";
+    const countryLabel = input.favCountries.join(", ");
+    const moodPart = input.mood ? `, hợp tâm trạng "${input.mood}"` : "";
+    const tvPart = input.preferTvShows ? ", thiên về phim bộ" : "";
+
     return {
-      recommendations: chosen.map((c, i) => ({
-        title: c.title,
-        reason: `Gợi ý theo gu ${genre}${moodPart}. Một lựa chọn mới ngoài ${input.libraryTitles.length} phim bạn đang có.`,
-        matchScore: 95 - i * 6,
-      })),
+      recommendations: chosen.map((c, i) => {
+        // Match score 60..95 tỉ lệ nghịch với rank.
+        const matchScore = Math.round(95 - (i * (95 - 60)) / Math.max(chosen.length - 1, 1));
+        const matchedGenre = c.genres.find((g) => favGenresLower.includes(g.toLowerCase()));
+        const reason =
+          (matchedGenre ? `Trùng thể loại ${matchedGenre}` : "Gợi ý mở rộng") +
+          (favCountriesUpper.includes(c.country.toUpperCase()) ? `, phim ${c.country}` : "") +
+          (input.preferTvShows && c.kind === "tv" ? ", phim bộ" : "") +
+          `${moodPart}. Phù hợp gu ${genreLabel}${countryLabel ? ` từ ${countryLabel}` : ""}${tvPart}.`;
+        // Silence unused-vars warning for range/max/min (kept for future tuning).
+        void range;
+        return { title: c.title, reason, matchScore };
+      }),
     };
   },
 

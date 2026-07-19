@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       mood,
       favGenres: pref?.favGenres ?? [],
       favCountries: pref?.favCountries ?? [],
+      preferTvShows: pref?.preferTvShows ?? false,
       libraryTitles: items.map((i) => i.mediaItem.title),
     });
 

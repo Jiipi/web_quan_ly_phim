@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -40,7 +36,10 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
 
   useEffect(() => {
     if (open) {
-      fetchTags();
+      const timer = setTimeout(() => {
+        void fetchTags();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -64,10 +63,7 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
         <Button
           variant="outline"
           size="sm"
-          className={cn(
-            "gap-2 h-9",
-            selectedTags.length > 0 && "border-primary bg-primary/10"
-          )}
+          className={cn("gap-2 h-9", selectedTags.length > 0 && "border-primary bg-primary/10")}
         >
           <Tag className="w-4 h-4" />
           Tags
@@ -83,12 +79,7 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Lọc theo Tags</span>
             {selectedTags.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearTags}
-                className="h-7 text-xs"
-              >
+              <Button variant="ghost" size="sm" onClick={clearTags} className="h-7 text-xs">
                 Xóa lọc
               </Button>
             )}
@@ -97,9 +88,7 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
           {loading ? (
             <p className="text-sm text-text-secondary text-center py-2">Đang tải...</p>
           ) : tags.length === 0 ? (
-            <p className="text-sm text-text-secondary text-center py-2">
-              Chưa có tag nào
-            </p>
+            <p className="text-sm text-text-secondary text-center py-2">Chưa có tag nào</p>
           ) : (
             <div className="space-y-1 max-h-48 overflow-y-auto">
               {tags.map((tag) => {
@@ -110,9 +99,7 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
                     onClick={() => toggleTag(tag.id)}
                     className={cn(
                       "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
-                      isSelected
-                        ? "bg-primary/20 text-primary"
-                        : "hover:bg-surface"
+                      isSelected ? "bg-primary/20 text-primary" : "hover:bg-surface",
                     )}
                   >
                     <div
@@ -121,13 +108,9 @@ export function TagFilter({ selectedTags, onTagsChange }: TagFilterProps) {
                     />
                     <span className="flex-1 text-left">{tag.name}</span>
                     {tag._count && tag._count.mediaTags > 0 && (
-                      <span className="text-xs text-text-secondary">
-                        {tag._count.mediaTags}
-                      </span>
+                      <span className="text-xs text-text-secondary">{tag._count.mediaTags}</span>
                     )}
-                    {isSelected && (
-                      <span className="text-primary">✓</span>
-                    )}
+                    {isSelected && <span className="text-primary">✓</span>}
                   </button>
                 );
               })}
@@ -161,17 +144,13 @@ export function TagChip({
         color: tagColor,
       }}
     >
-      <span
-        className="w-2 h-2 rounded-full"
-        style={{ backgroundColor: tagColor }}
-      />
+      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tagColor }} />
       {tagName}
       <button
         onClick={onRemove}
         className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
       >
-        <span className="sr-only">Xóa</span>
-        ×
+        <span className="sr-only">Xóa</span>×
       </button>
     </Badge>
   );

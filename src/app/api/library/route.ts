@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/session";
 import { db } from "@/lib/db";
 import { tmdb } from "@/lib/tmdb";
-import { updateWatchItemSchema } from "@/lib/library-schema";
+import { createWatchItemSchema, updateWatchItemSchema } from "@/lib/library-schema";
 import { flattenFieldErrors } from "@/lib/auth-schemas";
 import { logAudit, clientIp } from "@/lib/audit";
 
@@ -67,12 +67,25 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tmdbId, mediaType, status, personalScore, notes, platform, watchUrl } = body;
-    const userApiKey = req.cookies.get("tmdb_api_key")?.value;
-
-    if (!tmdbId || !mediaType || !status) {
-      return NextResponse.json({ error: "Thiếu tham số bắt buộc." }, { status: 400 });
+    const parsed = createWatchItemSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Dữ liệu không hợp lệ.", fieldErrors: flattenFieldErrors(parsed.error) },
+        { status: 400 },
+      );
     }
+    const {
+      tmdbId,
+      mediaType,
+      status,
+      personalScore,
+      notes,
+      platform,
+      watchUrl,
+      startedAt,
+      completedAt,
+    } = parsed.data;
+    const userApiKey = req.cookies.get("tmdb_api_key")?.value;
 
     let mediaItem = await db.mediaItem.findUnique({ where: { tmdbId: Number(tmdbId) } });
 
@@ -130,22 +143,24 @@ export async function POST(req: NextRequest) {
       where: { userId_mediaItemId: { userId, mediaItemId: mediaItem.id } },
       update: {
         status,
-        personalScore: personalScore ? Number(personalScore) : null,
-        notes: notes || null,
+        personalScore: personalScore ?? null,
+        notes: notes ?? null,
         totalEpisodes,
+        // Cập nhật ngày theo dõi nếu user truyền; nếu không, fallback hợp lý theo trạng thái.
+        startedAt: startedAt ?? (status === "watching" ? new Date() : undefined),
         lastWatchedAt: status === "watching" || status === "completed" ? new Date() : undefined,
-        completedAt: status === "completed" ? new Date() : undefined,
+        completedAt: completedAt ?? (status === "completed" ? new Date() : undefined),
       },
       create: {
         userId,
         mediaItemId: mediaItem.id,
         status,
-        personalScore: personalScore ? Number(personalScore) : null,
-        notes: notes || null,
+        personalScore: personalScore ?? null,
+        notes: notes ?? null,
         totalEpisodes,
-        startedAt: status === "watching" ? new Date() : null,
-        lastWatchedAt: status === "watching" ? new Date() : null,
-        completedAt: status === "completed" ? new Date() : null,
+        startedAt: startedAt ?? (status === "watching" ? new Date() : null),
+        lastWatchedAt: status === "watching" || status === "completed" ? new Date() : null,
+        completedAt: completedAt ?? (status === "completed" ? new Date() : null),
         ...(platform
           ? { sources: { create: [{ platformName: platform, watchUrl: watchUrl || null }] } }
           : {}),
@@ -178,7 +193,17 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const { watchItemId, status, priority, personalScore, notes, favorite } = parsed.data;
+    const {
+      watchItemId,
+      status,
+      priority,
+      personalScore,
+      notes,
+      favorite,
+      startedAt,
+      completedAt,
+      lastWatchedAt,
+    } = parsed.data;
 
     const existing = await db.watchItem.findUnique({ where: { id: watchItemId } });
     if (!existing || existing.userId !== userId) {
@@ -198,6 +223,9 @@ export async function PATCH(req: NextRequest) {
     if (personalScore !== undefined) data.personalScore = personalScore;
     if (notes !== undefined) data.notes = notes;
     if (favorite !== undefined) data.favorite = favorite;
+    if (startedAt !== undefined) data.startedAt = startedAt;
+    if (completedAt !== undefined) data.completedAt = completedAt;
+    if (lastWatchedAt !== undefined) data.lastWatchedAt = lastWatchedAt;
 
     const updated = await db.watchItem.update({
       where: { id: watchItemId },

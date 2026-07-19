@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Play, PlayCircle, Check, Star } from "lucide-react";
+import {
+  Plus,
+  Play,
+  PlayCircle,
+  Check,
+  Star,
+  Clock,
+  CheckCircle2,
+  Pencil,
+  Save,
+} from "lucide-react";
 import type { MediaDetail, DetailInitial } from "@/lib/media-detail";
 import { PosterImage } from "@/components/shared/PosterImage";
 import { StatusBadge, type WatchStatus } from "@/components/shared/StatusBadge";
@@ -10,9 +20,149 @@ import { ProgressBar } from "@/components/shared/ProgressBar";
 import { RatingReviewPanel } from "@/components/detail/RatingReviewPanel";
 import { useToast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatDate, toDateInputValue } from "@/lib/utils";
 import { countryLabel, STATUS_OPTIONS } from "@/lib/labels";
 import { TagAssignment } from "@/components/tags/TagAssignment";
+
+/** 1 ô hiển thị thông tin mốc thời gian (read-only). */
+function TimelineStat({
+  icon,
+  iconClass,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  iconClass: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", iconClass)}>
+        {icon}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+          {label}
+        </span>
+        <span className="text-sm font-medium text-white">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+/** 1 input date trong edit-mode có label + icon đồng nhất với TimelineStat. */
+function DateField({
+  id,
+  label,
+  icon,
+  iconClass,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  iconClass: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", iconClass)}>
+        {icon}
+      </div>
+      <div className="flex flex-col gap-1">
+        <label
+          htmlFor={id}
+          className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
+        >
+          {label}
+        </label>
+        <input
+          id={id}
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-white focus:border-primary/50 focus:outline-none [color-scheme:dark]"
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Input mini cho từng tập: nhập số phút đang xem dở, bấm Enter / Save để lưu. */
+function EpisodeMinuteField({
+  episode,
+  currentMinute,
+  runtime,
+  onSave,
+  busy,
+}: {
+  episode: number;
+  currentMinute: number | null;
+  runtime: number;
+  onSave: (minute: number) => void;
+  busy: boolean;
+}) {
+  const [value, setValue] = useState(
+    currentMinute !== null && currentMinute !== undefined ? String(currentMinute) : "",
+  );
+  const [dirty, setDirty] = useState(false);
+
+  // Đồng bộ khi prop từ ngoài đổi (ví dụ: reload sau khi lưu).
+  useEffect(() => {
+    if (!dirty) {
+      const timer = setTimeout(() => {
+        setValue(
+          currentMinute !== null && currentMinute !== undefined ? String(currentMinute) : "",
+        );
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [currentMinute, dirty]);
+
+  const commit = () => {
+    if (value === "" || value === null) return;
+    const raw = Math.floor(Number(value));
+    if (!Number.isFinite(raw) || raw < 0) return;
+    // Clamp về [0, runtime] thay vì block — UX thân thiện hơn.
+    const m = Math.min(raw, runtime);
+    if (m !== raw) setValue(String(m));
+    onSave(m);
+    setDirty(false);
+  };
+
+  return (
+    <label
+      htmlFor={`ep-min-${episode}`}
+      className="flex flex-col items-center gap-1 rounded-md border border-white/5 bg-white/2 px-1 py-1.5 text-[10px] text-text-secondary transition-colors hover:border-white/15"
+    >
+      <span className="font-mono font-bold text-text-muted">T{episode}</span>
+      <input
+        id={`ep-min-${episode}`}
+        type="number"
+        min={0}
+        max={runtime}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setDirty(true);
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          }
+        }}
+        disabled={busy}
+        placeholder="-"
+        aria-label={`Phút đang xem dở tập ${episode}`}
+        className="w-full min-w-0 rounded border-0 bg-transparent px-1 py-0.5 text-center font-mono text-[10px] text-white placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+    </label>
+  );
+}
 
 export function DetailView({ detail, initial }: { detail: MediaDetail; initial: DetailInitial }) {
   const { success, error: toastError } = useToast();
@@ -26,7 +176,23 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
   );
   const [currentEpisode, setCurrentEpisode] = useState(initial.currentEpisode);
   const [currentMinute, setCurrentMinute] = useState(initial.currentMinute);
+  const [startedAt, setStartedAt] = useState<string | null>(initial.startedAt);
+  const [completedAt, setCompletedAt] = useState<string | null>(initial.completedAt);
+  const [lastWatchedAt, setLastWatchedAt] = useState<string | null>(initial.lastWatchedAt);
   const [busy, setBusy] = useState(false);
+
+  // Per-episode minute cache (số phút đang xem dở của từng tập).
+  // Map: { [episodeNumber]: minute | null }
+  const [episodeMinutes, setEpisodeMinutes] = useState<Record<number, number | null>>(
+    initial.episodeMinutes ?? {},
+  );
+
+  // Edit-mode cho 3 mốc thời gian (user tự chọn, default = giá trị hiện tại).
+  const [editingDates, setEditingDates] = useState(false);
+  const [dateStarted, setDateStarted] = useState(toDateInputValue(initial.startedAt));
+  const [dateCompleted, setDateCompleted] = useState(toDateInputValue(initial.completedAt));
+  const [dateLastWatched, setDateLastWatched] = useState(toDateInputValue(initial.lastWatchedAt));
+  const [savingDates, setSavingDates] = useState(false);
   const [epInput, setEpInput] = useState(String(initial.currentEpisode));
   const [minuteInput, setMinuteInput] = useState(String(initial.currentMinute));
   const [currentTags, setCurrentTags] = useState(initial.tags ?? []);
@@ -60,9 +226,14 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
     }
   }
 
+  interface LibraryItemWithTags {
+    id: string;
+    tags?: Array<{ tagId: string; tag: { id: string; name: string; color: string } }>;
+  }
+
   async function refreshTags() {
     if (!watchItemId) return;
-    const res = await api.get<any[]>("/api/library");
+    const res = await api.get<LibraryItemWithTags[]>("/api/library");
     if (res.success && res.data) {
       const match = res.data.find((item) => item.id === watchItemId);
       if (match) {
@@ -71,13 +242,65 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
     }
   }
 
+  async function saveDates() {
+    if (!watchItemId) return;
+    setSavingDates(true);
+    const payload: Record<string, string | null> = {
+      watchItemId,
+    };
+    // Nếu input rỗng -> null (xoá mốc). Nếu có giá trị -> ISO string.
+    payload.startedAt = dateStarted ? new Date(dateStarted).toISOString() : null;
+    payload.completedAt = dateCompleted ? new Date(dateCompleted).toISOString() : null;
+    payload.lastWatchedAt = dateLastWatched ? new Date(dateLastWatched).toISOString() : null;
+
+    const res = await api.patch<{
+      startedAt: string | null;
+      completedAt: string | null;
+      lastWatchedAt: string | null;
+    }>("/api/progress", payload);
+
+    setSavingDates(false);
+    if (res.success && res.data) {
+      setStartedAt(res.data.startedAt);
+      setCompletedAt(res.data.completedAt);
+      setLastWatchedAt(res.data.lastWatchedAt);
+      setEditingDates(false);
+      success("Đã cập nhật mốc thời gian.");
+    } else {
+      toastError(res.error ?? "Không thể lưu mốc thời gian.");
+    }
+  }
+
+  async function saveEpisodeMinute(episodeNumber: number, minute: number) {
+    if (!watchItemId) return;
+    setBusy(true);
+    const res = await api.post<{
+      currentEpisode: number;
+      currentMinute: number;
+      status: WatchStatus;
+      completed: boolean;
+    }>("/api/progress", { watchItemId, episode: episodeNumber, minute });
+    setBusy(false);
+    if (res.success) {
+      setEpisodeMinutes((prev) => ({ ...prev, [episodeNumber]: minute }));
+      success(`Đã lưu tập ${episodeNumber}: phút ${minute}.`);
+    } else {
+      toastError(res.error ?? "Không thể lưu phút.");
+    }
+  }
+
   async function setEpisode(target: number, minute?: number) {
     if (!watchItemId) return;
     setBusy(true);
-    const res = await api.post<{ currentEpisode: number; currentMinute: number; status: WatchStatus; completed: boolean }>(
-      "/api/progress",
-      { watchItemId, episode: target, minute },
-    );
+    const res = await api.post<{
+      currentEpisode: number;
+      currentMinute: number;
+      status: WatchStatus;
+      completed: boolean;
+      startedAt: string | null;
+      completedAt: string | null;
+      lastWatchedAt: string | null;
+    }>("/api/progress", { watchItemId, episode: target, minute });
     setBusy(false);
     if (res.success && res.data) {
       setCurrentEpisode(res.data.currentEpisode);
@@ -87,6 +310,9 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
         setMinuteInput(String(res.data.currentMinute));
       }
       if (res.data.status) setStatus(res.data.status);
+      if (res.data.startedAt) setStartedAt(res.data.startedAt);
+      if (res.data.completedAt) setCompletedAt(res.data.completedAt);
+      if (res.data.lastWatchedAt) setLastWatchedAt(res.data.lastWatchedAt);
       if (res.data.completed) success(`Đã xem xong "${detail.title}"! 🎉`);
       else success(`Đã cập nhật tới tập ${res.data.currentEpisode}.`);
     } else {
@@ -236,6 +462,113 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
         </div>
       </div>
 
+      {/* Timeline mốc thời gian — user tự chọn ngày bắt đầu/kết thúc/lần cuối. */}
+      {inLibrary && (
+        <section
+          aria-label="Mốc thời gian theo dõi"
+          className="glass-card flex flex-wrap gap-x-8 gap-y-3 p-5"
+        >
+          {editingDates ? (
+            <div className="flex w-full flex-col gap-3">
+              <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+                <DateField
+                  id="started-date"
+                  label="Bắt đầu xem"
+                  icon={<Play size={14} />}
+                  iconClass="bg-secondary/15 text-secondary"
+                  value={dateStarted}
+                  onChange={setDateStarted}
+                />
+                <DateField
+                  id="lastwatched-date"
+                  label="Lần xem cuối"
+                  icon={<Clock size={14} />}
+                  iconClass="bg-primary/15 text-primary"
+                  value={dateLastWatched}
+                  onChange={setDateLastWatched}
+                />
+                <DateField
+                  id="completed-date"
+                  label="Hoàn thành"
+                  icon={<CheckCircle2 size={14} />}
+                  iconClass="bg-emerald-500/15 text-emerald-400"
+                  value={dateCompleted}
+                  onChange={setDateCompleted}
+                />
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingDates(false);
+                      // Reset về giá trị hiện tại khi huỷ.
+                      setDateStarted(toDateInputValue(startedAt));
+                      setDateCompleted(toDateInputValue(completedAt));
+                      setDateLastWatched(toDateInputValue(lastWatchedAt));
+                    }}
+                    disabled={savingDates}
+                    className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-white/10 disabled:opacity-50"
+                  >
+                    Huỷ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveDates}
+                    disabled={savingDates}
+                    className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white shadow-glow-primary transition-all hover:bg-primary-hover disabled:opacity-60"
+                  >
+                    <Save size={12} /> {savingDates ? "Đang lưu..." : "Lưu"}
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-text-muted">
+                Để trống = xoá mốc đó. Ngày sẽ lưu theo giờ địa phương của bạn.
+              </p>
+            </div>
+          ) : (
+            <>
+              {startedAt && (
+                <TimelineStat
+                  icon={<Play size={15} />}
+                  iconClass="bg-secondary/15 text-secondary"
+                  label="Bắt đầu xem"
+                  value={formatDate(startedAt)}
+                />
+              )}
+              {lastWatchedAt && (
+                <TimelineStat
+                  icon={<Clock size={15} />}
+                  iconClass="bg-primary/15 text-primary"
+                  label="Lần xem cuối"
+                  value={formatDate(lastWatchedAt)}
+                />
+              )}
+              {completedAt && (
+                <TimelineStat
+                  icon={<CheckCircle2 size={15} />}
+                  iconClass="bg-emerald-500/15 text-emerald-400"
+                  label="Hoàn thành"
+                  value={formatDate(completedAt)}
+                />
+              )}
+              {/* Fallback khi chưa có mốc nào */}
+              {!startedAt && !completedAt && !lastWatchedAt && (
+                <span className="text-xs text-text-muted">
+                  {'Chưa có mốc thời gian nào. Bấm "Sửa" để thêm.'}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setEditingDates(true)}
+                className="ml-auto inline-flex items-center gap-1 self-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary transition-all hover:bg-white/10 hover:text-white"
+                aria-label="Sửa mốc thời gian"
+              >
+                <Pencil size={11} /> Sửa
+              </button>
+            </>
+          )}
+        </section>
+      )}
+
       {/* TV progress / episode grid */}
       {isTv && inLibrary && (
         <section className="glass-card p-6">
@@ -244,7 +577,10 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
             <span className="font-mono text-xs text-text-secondary">
               {currentEpisode}/{total > 0 ? total : "?"}
               {currentMinute > 0 && detail.runtime && (
-                <span className="text-text-muted"> · {currentMinute}/{detail.runtime}p</span>
+                <span className="text-text-muted">
+                  {" "}
+                  · {currentMinute}/{detail.runtime}p
+                </span>
               )}
             </span>
           </div>
@@ -252,27 +588,48 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
           <ProgressBar current={currentEpisode} total={total} className="mb-5" />
 
           {total > 0 && total <= 60 ? (
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: total }, (_, i) => i + 1).map((ep) => {
-                const watched = ep <= currentEpisode;
-                return (
-                  <button
-                    key={ep}
-                    onClick={() => setEpisode(ep)}
-                    disabled={busy}
-                    aria-label={`Đánh dấu đã xem tới tập ${ep}`}
-                    aria-pressed={watched}
-                    className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-md border text-xs font-mono font-semibold transition-all disabled:opacity-50",
-                      watched
-                        ? "border-primary bg-primary/20 text-white"
-                        : "border-white/10 bg-white/5 text-text-secondary hover:border-white/25",
-                    )}
-                  >
-                    {watched ? <Check size={13} /> : ep}
-                  </button>
-                );
-              })}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: total }, (_, i) => i + 1).map((ep) => {
+                  const watched = ep <= currentEpisode;
+                  return (
+                    <button
+                      key={ep}
+                      onClick={() => setEpisode(ep)}
+                      disabled={busy}
+                      aria-label={`Đánh dấu đã xem tới tập ${ep}`}
+                      aria-pressed={watched}
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-md border text-xs font-mono font-semibold transition-all disabled:opacity-50",
+                        watched
+                          ? "border-primary bg-primary/20 text-white"
+                          : "border-white/10 bg-white/5 text-text-secondary hover:border-white/25",
+                      )}
+                    >
+                      {watched ? <Check size={13} /> : ep}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Mini-grid: chọn số phút đang xem dở của từng tập */}
+              <div className="rounded-lg border border-white/5 bg-white/2 p-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Phút đang xem dở{" "}
+                  <span className="normal-case text-text-muted/70">(để trống = đã xem hết)</span>
+                </p>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
+                  {Array.from({ length: total }, (_, i) => i + 1).map((ep) => (
+                    <EpisodeMinuteField
+                      key={ep}
+                      episode={ep}
+                      currentMinute={episodeMinutes[ep] ?? null}
+                      runtime={detail.runtime ?? 90}
+                      onSave={(m) => saveEpisodeMinute(ep, m)}
+                      busy={busy}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex flex-wrap items-end gap-3">

@@ -9,9 +9,12 @@ describe("ProgressBar", () => {
     expect(screen.getByText("50%")).toBeInTheDocument();
   });
 
-  it("trả 0% khi total = 0 (tránh chia cho 0)", () => {
+  it("trả 0% khi total = 0 (tránh chia cho 0) và ẩn phần trăm", () => {
+    // Khi không biết tổng tập, thanh hiển thị trống và KHÔNG kèm "%" để
+    // khớp với grid view / list view (tránh "Tập 0/0" gây hiểu nhầm).
     render(<ProgressBar current={0} total={0} />);
-    expect(screen.getByText("0%")).toBeInTheDocument();
+    expect(screen.queryByText("0%")).not.toBeInTheDocument();
+    expect(screen.getByText("Tập 0")).toBeInTheDocument();
   });
 
   it("kẹp phần trăm tối đa ở 100% khi current > total", () => {

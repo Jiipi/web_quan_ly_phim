@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Mail, Lock, User, Loader2 } from "lucide-react";
 import { registerAction, type AuthActionState } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -65,6 +67,17 @@ function IconField({
 
 export function RegisterForm() {
   const [state, formAction, pending] = useActionState(registerAction, initialState);
+  const router = useRouter();
+  const { update } = useSession();
+
+  useEffect(() => {
+    if (!state?.success || !state.redirectTo) return;
+    // Đồng bộ SessionProvider (cookie đã set ở server action nhưng client cache chưa cập nhật).
+    void update().then(() => {
+      router.push(state.redirectTo!);
+      router.refresh();
+    });
+  }, [state, router, update]);
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>

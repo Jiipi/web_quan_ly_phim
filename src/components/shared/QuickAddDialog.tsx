@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, {
   createContext,
@@ -9,7 +9,19 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import { X, Search, Film, Tv, Play, Plus, ListPlus, Loader2, Star, Clock, TrendingUp } from "lucide-react";
+import {
+  X,
+  Search,
+  Film,
+  Tv,
+  Play,
+  Plus,
+  ListPlus,
+  Loader2,
+  Star,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { useLibrary } from "@/lib/use-library";
@@ -122,70 +134,12 @@ function QuickAddDialog({
   const [status, setStatus] = useState<WatchStatus>("watching");
   const [personalScore, setPersonalScore] = useState<number>(0);
   const [notes, setNotes] = useState("");
+  /** Ngày bắt đầu/completed do user chọn (yyyy-MM-dd). Rỗng = dùng fallback hôm nay. */
+  const [startedAt, setStartedAt] = useState("");
+  const [completedAt, setCompletedAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const dialogRef = useRef<HTMLDivElement>(null);
-
-  // Debounced search với unified API
-  useEffect(() => {
-    if (prefilled) return;
-    const trimmed = query.trim();
-    
-    // Hiện trending khi input rỗng
-    if (trimmed.length === 0) {
-      loadTrending();
-      return;
-    }
-    
-    // Hiện history khi gõ dưới 2 ký tự
-    if (trimmed.length < 2) {
-      loadHistory();
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search", { 
-          q: trimmed,
-          limit: 8 
-        });
-        setIsSearching(false);
-        if (res.success && res.data) {
-          setSearchResults(res.data.results.map(normalizeUnifiedResult));
-        }
-      } catch {
-        setIsSearching(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [query, prefilled]);
-
-  // Load trending suggestions
-  const loadTrending = useCallback(async () => {
-    try {
-      const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search/trending", { 
-        limit: 6 
-      });
-      if (res.success && res.data) {
-        setTrendingResults(res.data.results.map(normalizeUnifiedResult));
-      }
-    } catch { /* ignore */ }
-  }, []);
-
-  // Load search history
-  const loadHistory = useCallback(async () => {
-    try {
-      const res = await api.get<{ results: { query: string; type: string | null }[] }>(
-        "/api/search/history",
-        { limit: 5 }
-      );
-      if (res.success && res.data) {
-        setSearchHistory(res.data.results.map((r) => r.query));
-      }
-    } catch { /* ignore */ }
-  }, []);
 
   // Normalize unified search result to QuickAddMedia
   const normalizeUnifiedResult = (r: UnifiedSearchResult): QuickAddMedia => ({
@@ -198,11 +152,82 @@ function QuickAddDialog({
     rating: r.rating || 0,
   });
 
+  // Load trending suggestions
+  const loadTrending = useCallback(async () => {
+    try {
+      const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search/trending", {
+        limit: 6,
+      });
+      if (res.success && res.data) {
+        setTrendingResults(res.data.results.map(normalizeUnifiedResult));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // Load search history
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await api.get<{ results: { query: string; type: string | null }[] }>(
+        "/api/search/history",
+        { limit: 5 },
+      );
+      if (res.success && res.data) {
+        setSearchHistory(res.data.results.map((r) => r.query));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // Debounced search với unified API
+  useEffect(() => {
+    if (prefilled) return;
+    const trimmed = query.trim();
+
+    // Hiện trending khi input rỗng
+    if (trimmed.length === 0) {
+      const timer = setTimeout(() => {
+        void loadTrending();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    // Hiện history khi gõ dưới 2 ký tự
+    if (trimmed.length < 2) {
+      const timer = setTimeout(() => {
+        void loadHistory();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await api.get<{ results: UnifiedSearchResult[] }>("/api/search", {
+          q: trimmed,
+          limit: 8,
+        });
+        setIsSearching(false);
+        if (res.success && res.data) {
+          setSearchResults(res.data.results.map(normalizeUnifiedResult));
+        }
+      } catch {
+        setIsSearching(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query, prefilled, loadTrending, loadHistory]);
+
   // Save search query
   const saveSearchQuery = async (q: string, type?: string) => {
     try {
       await api.post("/api/search/history", { query: q, type });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   // Load detail khi chọn phim (gọi trực tiếp từ event handler)
@@ -263,7 +288,13 @@ function QuickAddDialog({
       status,
       personalScore: personalScore > 0 ? personalScore : undefined,
       notes: notes.trim() || undefined,
+      startedAt: startedAt ? new Date(startedAt).toISOString() : undefined,
+      completedAt: completedAt ? new Date(completedAt).toISOString() : undefined,
     });
+
+    // Reset form để lần sau mở dialog không dính state cũ.
+    setStartedAt("");
+    setCompletedAt("");
 
     setIsSubmitting(false);
     if (res.success) {
@@ -395,26 +426,29 @@ function QuickAddDialog({
               )}
 
               {/* Search History (when input < 2 chars) */}
-              {query.trim().length > 0 && query.trim().length < 2 && !isSearching && searchHistory.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                    <Clock size={12} />
-                    Tìm kiếm gần đây
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {searchHistory.map((q, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setQuery(q)}
-                        className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[10px] text-text-secondary transition-colors hover:bg-white/10 hover:text-text"
-                      >
-                        <Clock size={10} />
-                        {q}
-                      </button>
-                    ))}
+              {query.trim().length > 0 &&
+                query.trim().length < 2 &&
+                !isSearching &&
+                searchHistory.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                      <Clock size={12} />
+                      Tìm kiếm gần đây
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {searchHistory.map((q, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setQuery(q)}
+                          className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[10px] text-text-secondary transition-colors hover:bg-white/10 hover:text-text"
+                        >
+                          <Clock size={10} />
+                          {q}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Search Results */}
               {searchResults.length > 0 && (
@@ -561,6 +595,50 @@ function QuickAddDialog({
                     </div>
                   </div>
                 )}
+
+                {/* Ngày bắt đầu / hoàn thành do user tự chọn */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {(status === "watching" || status === "completed") && (
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="started-at"
+                        className="text-[10px] font-bold uppercase tracking-wider text-text-muted"
+                      >
+                        Ngày bắt đầu xem
+                        <span className="ml-1 normal-case text-text-muted/70">
+                          (mặc định hôm nay)
+                        </span>
+                      </label>
+                      <input
+                        id="started-at"
+                        type="date"
+                        value={startedAt}
+                        onChange={(e) => setStartedAt(e.target.value)}
+                        className="rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-xs text-white focus:border-primary/50 focus:outline-none [color-scheme:dark]"
+                      />
+                    </div>
+                  )}
+                  {status === "completed" && (
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="completed-at"
+                        className="text-[10px] font-bold uppercase tracking-wider text-text-muted"
+                      >
+                        Ngày hoàn thành
+                        <span className="ml-1 normal-case text-text-muted/70">
+                          (mặc định hôm nay)
+                        </span>
+                      </label>
+                      <input
+                        id="completed-at"
+                        type="date"
+                        value={completedAt}
+                        onChange={(e) => setCompletedAt(e.target.value)}
+                        className="rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-xs text-white focus:border-primary/50 focus:outline-none [color-scheme:dark]"
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label

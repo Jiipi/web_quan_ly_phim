@@ -145,10 +145,22 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
       />
 
       {/* Corner HUD brackets */}
-      <div className="absolute left-3 top-3 z-10 h-4 w-4 border-l-2 border-t-2 border-primary opacity-70" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
-      <div className="absolute right-3 top-3 z-10 h-4 w-4 border-r-2 border-t-2 border-secondary opacity-70" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
-      <div className="absolute left-3 bottom-3 z-10 h-4 w-4 border-b-2 border-l-2 border-secondary opacity-70" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
-      <div className="absolute right-3 bottom-3 z-10 h-4 w-4 border-b-2 border-r-2 border-primary opacity-70" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
+      <div
+        className="absolute left-3 top-3 z-10 h-4 w-4 border-l-2 border-t-2 border-primary opacity-70"
+        style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
+      />
+      <div
+        className="absolute right-3 top-3 z-10 h-4 w-4 border-r-2 border-t-2 border-secondary opacity-70"
+        style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
+      />
+      <div
+        className="absolute left-3 bottom-3 z-10 h-4 w-4 border-b-2 border-l-2 border-secondary opacity-70"
+        style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
+      />
+      <div
+        className="absolute right-3 bottom-3 z-10 h-4 w-4 border-b-2 border-r-2 border-primary opacity-70"
+        style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
+      />
 
       {/* Content with slide/fade transition */}
       <div className="relative z-10 p-6 sm:p-8 md:p-10">
@@ -221,23 +233,26 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
                   </span>
                 )}
                 {year && <span>{year}</span>}
-                {item.runtime && <span>{Math.floor(item.runtime / 60)}h {item.runtime % 60}m</span>}
+                {item.runtime && (
+                  <span>
+                    {Math.floor(item.runtime / 60)}h {item.runtime % 60}m
+                  </span>
+                )}
                 <span className="font-semibold uppercase tracking-wider">
                   {item.mediaType === "tv" ? "Phim bộ" : "Phim lẻ"}
                 </span>
               </div>
 
-              {/* Progress bar (only for TV shows being watched) */}
-              {item.mediaType === "tv" &&
-                item.totalEpisodes !== undefined &&
-                item.totalEpisodes > 0 && (
-                  <div className="flex items-center gap-3">
-                    <Progress value={progress} className="h-1.5 flex-1 max-w-xs bg-white/10" />
-                    <span className="font-mono text-[10px] font-bold text-white/70">
-                      Tập {item.currentEpisode || 0}/{item.totalEpisodes}
-                    </span>
-                  </div>
-                )}
+              {/* Progress bar — chỉ phim bộ, chỉ khi biết tổng số tập.
+                  Khi totalEpisodes=0 (TMDb không trả về) ta ẩn để khớp với grid view. */}
+              {item.mediaType === "tv" && (item.totalEpisodes ?? 0) > 0 && (
+                <div className="flex items-center gap-3">
+                  <Progress value={progress} className="h-1.5 flex-1 max-w-xs bg-white/10" />
+                  <span className="font-mono text-[10px] font-bold text-white/70">
+                    Tập {item.currentEpisode || 0}/{item.totalEpisodes}
+                  </span>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -292,7 +307,7 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
-                  currentIndex === idx ? "w-4 bg-primary" : "w-1.5 bg-white/30 hover:bg-white/50"
+                  currentIndex === idx ? "w-4 bg-primary" : "w-1.5 bg-white/30 hover:bg-white/50",
                 )}
                 aria-label={`Slide ${idx + 1}`}
               />
@@ -302,9 +317,15 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
       )}
 
       {/* Bottom neon line */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary to-secondary" style={{ boxShadow: "0 0 12px oklch(0.72 0.32 330 / 0.7)" }} />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary to-secondary"
+        style={{ boxShadow: "0 0 12px oklch(0.72 0.32 330 / 0.7)" }}
+      />
       {/* Top neon line */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-secondary to-primary" style={{ boxShadow: "0 0 12px oklch(0.85 0.18 200 / 0.7)" }} />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-secondary to-primary"
+        style={{ boxShadow: "0 0 12px oklch(0.85 0.18 200 / 0.7)" }}
+      />
     </motion.section>
   );
 }

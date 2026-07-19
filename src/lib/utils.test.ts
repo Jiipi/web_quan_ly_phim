@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { cn, formatRelativeTime, formatDate } from "./utils";
+import { cn, formatRelativeTime, formatDate, toDateInputValue } from "./utils";
 
 describe("cn", () => {
   it("nối nhiều class thành chuỗi", () => {
@@ -57,5 +57,19 @@ describe("formatDate", () => {
 
   it("định dạng ngày theo vi-VN", () => {
     expect(formatDate(new Date("2026-03-09T00:00:00.000Z"))).toMatch(/2026/);
+  });
+});
+
+describe("toDateInputValue", () => {
+  it("trả chuỗi rỗng khi null/undefined/invalid", () => {
+    expect(toDateInputValue(null)).toBe("");
+    expect(toDateInputValue(undefined)).toBe("");
+    expect(toDateInputValue("not-a-date")).toBe("");
+  });
+
+  it("trả 'yyyy-MM-dd' theo local time", () => {
+    // Sử dụng local date để tránh phụ thuộc vào timezone khi test.
+    const d = new Date(2026, 6, 19, 10, 0, 0); // 19/07/2026 10:00 local
+    expect(toDateInputValue(d)).toBe("2026-07-19");
   });
 });

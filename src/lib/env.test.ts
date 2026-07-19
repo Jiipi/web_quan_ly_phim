@@ -96,6 +96,13 @@ describe("deriveFeatures", () => {
         .aiReady,
     ).toBe(true);
   });
+
+  it("aiReady: groq cần GROQ_API_KEY", () => {
+    expect(deriveFeatures({ ...base, AI_PROVIDER: "groq" }).aiReady).toBe(false);
+    expect(deriveFeatures({ ...base, AI_PROVIDER: "groq", GROQ_API_KEY: "gsk-x" }).aiReady).toBe(
+      true,
+    );
+  });
 });
 
 describe("assertEnv", () => {

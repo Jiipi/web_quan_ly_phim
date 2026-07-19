@@ -37,11 +37,25 @@ export async function POST() {
       );
     }
 
-    const genres = items.flatMap((i) => i.mediaItem.genres);
-    const countries = items.flatMap((i) => i.mediaItem.countries);
+    const pref = await db.userPreference.findUnique({ where: { userId } });
+    const genresFromLibrary = items.flatMap((i) => i.mediaItem.genres);
+    const countriesFromLibrary = items.flatMap((i) => i.mediaItem.countries);
     const ratedTitles = items
       .filter((i) => i.personalScore != null)
       .map((i) => ({ title: i.mediaItem.title, score: i.personalScore as number }));
+
+    // Kết hợp sở thích user đã khai báo trong Settings để không phụ thuộc 100%
+    // vào chất lượng metadata TMDb (mock/seed có thể thiếu genres). Sở thích
+    // được tính trọng số gấp đôi để phản ánh chủ đích của user.
+    const favGenres = pref?.favGenres ?? [];
+    const favCountries = pref?.favCountries ?? [];
+    const genres = [...genresFromLibrary, ...genresFromLibrary, ...favGenres, ...favGenres];
+    const countries = [
+      ...countriesFromLibrary,
+      ...countriesFromLibrary,
+      ...favCountries,
+      ...favCountries,
+    ];
 
     const provider = getAIProvider();
     const result = await provider.tasteProfile({ genres, countries, ratedTitles });

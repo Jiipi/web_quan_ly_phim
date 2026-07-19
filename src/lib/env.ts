@@ -41,9 +41,10 @@ export const envSchema = z
     TMDB_API_KEY: z.string().min(1).optional(),
 
     // AI (tùy chọn — provider mặc định 'mock')
-    AI_PROVIDER: z.enum(["openai", "google", "mock"]).default("mock"),
+    AI_PROVIDER: z.enum(["openai", "google", "groq", "mock"]).default("mock"),
     OPENAI_API_KEY: z.string().min(1).optional(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
+    GROQ_API_KEY: z.string().min(1).optional(),
 
     // Google OAuth (tùy chọn — thiếu thì tắt nút đăng nhập Google)
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
@@ -86,7 +87,8 @@ export function deriveFeatures(e: Env): Features {
   const aiReady =
     e.AI_PROVIDER === "mock" ||
     (e.AI_PROVIDER === "openai" && !!e.OPENAI_API_KEY) ||
-    (e.AI_PROVIDER === "google" && !!e.GOOGLE_GENERATIVE_AI_API_KEY);
+    (e.AI_PROVIDER === "google" && !!e.GOOGLE_GENERATIVE_AI_API_KEY) ||
+    (e.AI_PROVIDER === "groq" && !!e.GROQ_API_KEY);
 
   return {
     tmdb: !!e.TMDB_API_KEY,

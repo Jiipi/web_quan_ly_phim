@@ -57,14 +57,8 @@ const PARTICLE_COLOR_VAR: Record<ParticleSpec["color"], string> = {
   violet: "oklch(0.7 0.32 290)",
 };
 
-export function CyberBackground({
-  className,
-  subtle = false,
-}: CyberBackgroundProps) {
-  const particles = React.useMemo(
-    () => genParticles(PARTICLES_LIGHT, subtle ? 99 : 7),
-    [subtle],
-  );
+export function CyberBackground({ className, subtle = false }: CyberBackgroundProps) {
+  const particles = React.useMemo(() => genParticles(PARTICLES_LIGHT, subtle ? 99 : 7), [subtle]);
   const bigParticles = React.useMemo(
     () => genParticles(PARTICLES_HEAVY, subtle ? 314 : 21),
     [subtle],
@@ -74,7 +68,8 @@ export function CyberBackground({
     <div
       aria-hidden="true"
       className={cn(
-        "pointer-events-none fixed inset-0 -z-10 overflow-hidden",
+        // Cyber backdrop chỉ chạy khi dark mode — khi light, nền trắng/kem gốc hiện ra.
+        "pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden dark:block",
         className,
       )}
     >
@@ -94,8 +89,7 @@ export function CyberBackground({
           style={{
             backgroundImage: `linear-gradient(oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px), linear-gradient(90deg, oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px)`,
             backgroundSize: "56px 56px",
-            maskImage:
-              "radial-gradient(ellipse 75% 60% at 50% 35%, black 0%, transparent 90%)",
+            maskImage: "radial-gradient(ellipse 75% 60% at 50% 35%, black 0%, transparent 90%)",
             WebkitMaskImage:
               "radial-gradient(ellipse 75% 60% at 50% 35%, black 0%, transparent 90%)",
           }}
@@ -155,8 +149,7 @@ export function CyberBackground({
           top: "62%",
           background:
             "linear-gradient(90deg, transparent 0%, oklch(0.85 0.18 200 / 0.7) 30%, oklch(0.72 0.32 330 / 0.7) 50%, oklch(0.85 0.18 200 / 0.7) 70%, transparent 100%)",
-          boxShadow:
-            "0 0 18px oklch(0.72 0.32 330 / 0.5), 0 0 36px oklch(0.85 0.18 200 / 0.3)",
+          boxShadow: "0 0 18px oklch(0.72 0.32 330 / 0.5), 0 0 36px oklch(0.85 0.18 200 / 0.3)",
         }}
       />
 
@@ -223,8 +216,7 @@ export function CyberBackground({
       <div
         className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
         style={{
-          backgroundImage:
-            "linear-gradient(transparent 50%, rgba(255,255,255,0.6) 50%)",
+          backgroundImage: "linear-gradient(transparent 50%, rgba(255,255,255,0.6) 50%)",
           backgroundSize: "2px 2px",
         }}
       />
@@ -233,15 +225,13 @@ export function CyberBackground({
       <div
         className="absolute left-6 top-24 h-8 w-8 border-l-2 border-t-2 border-primary opacity-50"
         style={{
-          filter:
-            "drop-shadow(0 0 6px oklch(0.72 0.32 330 / 0.6))",
+          filter: "drop-shadow(0 0 6px oklch(0.72 0.32 330 / 0.6))",
         }}
       />
       <div
         className="absolute right-6 bottom-24 h-8 w-8 border-b-2 border-r-2 border-secondary opacity-50"
         style={{
-          filter:
-            "drop-shadow(0 0 6px oklch(0.85 0.18 200 / 0.6))",
+          filter: "drop-shadow(0 0 6px oklch(0.85 0.18 200 / 0.6))",
         }}
       />
 

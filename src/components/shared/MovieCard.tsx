@@ -4,9 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Play, Plus, Star, Tv, Film, Check } from "lucide-react";
+import { Play, Plus, Star, Tv, Film, Check, Clock } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import { cn, formatRelativeTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { type WatchStatus } from "@/components/shared/StatusBadge";
@@ -25,14 +25,11 @@ const movieCardVariants = cva(
   {
     variants: {
       variant: {
-        grid:
-          "hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_24px_oklch(0.72_0.32_330_/_0.35),0_8px_30px_oklch(0_0_0_/_0.4)]",
+        grid: "hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_24px_oklch(0.72_0.32_330_/_0.35),0_8px_30px_oklch(0_0_0_/_0.4)]",
         compact:
           "hover:border-secondary/60 hover:-translate-y-0.5 hover:shadow-[0_0_16px_oklch(0.85_0.18_200_/_0.3)]",
-        hero:
-          "border-0 rounded-3xl shadow-[0_0_40px_oklch(0.72_0.32_330_/_0.3)]",
-        list:
-          "flex flex-row items-stretch hover:border-accent/60 hover:shadow-[0_0_16px_oklch(0.7_0.32_290_/_0.25)]",
+        hero: "border-0 rounded-3xl shadow-[0_0_40px_oklch(0.72_0.32_330_/_0.3)]",
+        list: "flex flex-row items-stretch hover:border-accent/60 hover:shadow-[0_0_16px_oklch(0.7_0.32_290_/_0.25)]",
       },
     },
     defaultVariants: {
@@ -41,8 +38,7 @@ const movieCardVariants = cva(
   },
 );
 
-export interface MovieCardProps
-  extends VariantProps<typeof movieCardVariants> {
+export interface MovieCardProps extends VariantProps<typeof movieCardVariants> {
   tmdbId: number;
   mediaType: "movie" | "tv";
   title: string;
@@ -63,6 +59,7 @@ export interface MovieCardProps
   onPlay?: () => void;
   tags?: Tag[];
   showTags?: boolean;
+  lastWatchedAt?: string | null;
 }
 
 const STATUS_LABEL: Record<WatchStatus, string> = {
@@ -76,8 +73,7 @@ const STATUS_LABEL: Record<WatchStatus, string> = {
 
 const STATUS_CLASSES: Record<WatchStatus, string> = {
   watching: "bg-watching/20 text-watching border-watching/40",
-  want_to_watch:
-    "bg-want-to-watch/20 text-want-to-watch border-want-to-watch/40",
+  want_to_watch: "bg-want-to-watch/20 text-want-to-watch border-want-to-watch/40",
   completed: "bg-completed/20 text-completed border-completed/40",
   paused: "bg-paused/20 text-paused border-paused/40",
   dropped: "bg-dropped/20 text-dropped border-dropped/40",
@@ -132,6 +128,7 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
       onPlay,
       tags,
       showTags = false,
+      lastWatchedAt,
     },
     ref,
   ) => {
@@ -139,8 +136,13 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
     const posterUrl = getPosterUrl(posterPath);
     const year = getYear(releaseDate);
     const isTV = mediaType === "tv";
-    const progress = totalEpisodes && totalEpisodes > 0
-      ? Math.min(100, Math.round(((currentEpisode || 0) / totalEpisodes) * 100))
+    const safeCurrent = currentEpisode ?? 0;
+    const hasKnownTotal = totalEpisodes !== undefined && totalEpisodes > 0;
+    const hasProgress = isTV && safeCurrent > 0;
+    // Progress bar chỉ vẽ khi biết tổng số tập. Khi tổng = 0 (TMDb không trả về
+    // `number_of_episodes`) ta không thể tính % nên ẩn bar để tránh thanh 0% gây hiểu lầm.
+    const progress = hasKnownTotal
+      ? Math.min(100, Math.round((safeCurrent / totalEpisodes) * 100))
       : 0;
 
     const Wrapper = layoutId ? motion.div : "div";
@@ -152,11 +154,7 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
         className={cn(movieCardVariants({ variant }), className)}
         {...(motionOnlyProps as Record<string, unknown>)}
       >
-        <Link
-          href={href}
-          className="flex h-full flex-col"
-          aria-label={`Xem chi tiết ${title}`}
-        >
+        <Link href={href} className="flex h-full flex-col" aria-label={`Xem chi tiết ${title}`}>
           {/* Poster */}
           <div className="relative aspect-[2/3] w-full overflow-hidden bg-card">
             {posterUrl ? (
@@ -244,7 +242,13 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
             )}
 
             {/* Neon border on hover */}
-            <div className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ boxShadow: "inset 0 0 0 1px oklch(0.72 0.32 330 / 0.5), inset 0 0 16px oklch(0.72 0.32 330 / 0.2)" }} />
+            <div
+              className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              style={{
+                boxShadow:
+                  "inset 0 0 0 1px oklch(0.72 0.32 330 / 0.5), inset 0 0 16px oklch(0.72 0.32 330 / 0.2)",
+              }}
+            />
           </div>
 
           {/* Content */}
@@ -253,9 +257,7 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
               {title}
             </h3>
             {originalTitle && originalTitle !== title && (
-              <p className="line-clamp-1 font-mono text-[10px] text-text-muted">
-                {originalTitle}
-              </p>
+              <p className="line-clamp-1 font-mono text-[10px] text-text-muted">{originalTitle}</p>
             )}
             <div className="flex items-center gap-1.5 font-mono text-[10px] text-text-secondary">
               {year && <span>{year}</span>}
@@ -270,15 +272,35 @@ export const MovieCard = React.forwardRef<HTMLDivElement, MovieCardProps>(
               )}
             </div>
 
-            {/* Progress for TV shows */}
-            {isTV && currentEpisode !== undefined && totalEpisodes !== undefined && totalEpisodes > 0 && (
+            {/* Last watched hint — chỉ hiện khi có dữ liệu. */}
+            {lastWatchedAt && (
+              <div
+                className={cn(
+                  "inline-flex items-center gap-1 text-text-muted",
+                  variant === "grid" ? "text-[9px] font-mono" : "text-[10px] font-mono",
+                )}
+              >
+                <Clock className={cn(variant === "grid" ? "h-2 w-2" : "h-2.5 w-2.5")} />
+                <span>
+                  {variant === "grid"
+                    ? formatRelativeTime(lastWatchedAt)
+                    : `Xem cách đây ${formatRelativeTime(lastWatchedAt)}`}
+                </span>
+              </div>
+            )}
+
+            {/* Episode info cho phim bộ — hiển thị đồng nhất với list/table.
+                - Có tổng tập: thanh progress + "X/Y"
+                - Chưa biết tổng (TMDb không trả number_of_episodes): chỉ hiện "Tập X"
+                - Chưa xem tập nào (currentEpisode=0): không hiện để tránh rối */}
+            {isTV && hasProgress && (
               <div className="mt-1.5 flex flex-col gap-1">
-                <Progress value={progress} className="h-1" />
+                {hasKnownTotal && <Progress value={progress} className="h-1" />}
                 <div className="flex items-center justify-between text-[9px] font-mono font-bold">
                   <span className="text-text-secondary">
-                    {currentEpisode}/{totalEpisodes}
+                    {hasKnownTotal ? `Tập ${safeCurrent}/${totalEpisodes}` : `Tập ${safeCurrent}`}
                   </span>
-                  {currentEpisode >= totalEpisodes && (
+                  {hasKnownTotal && safeCurrent >= totalEpisodes && (
                     <span className="inline-flex items-center gap-0.5 text-completed">
                       <Check className="h-2.5 w-2.5" /> xong
                     </span>

@@ -9,11 +9,28 @@ import { loginSchema, registerSchema, flattenFieldErrors } from "@/lib/auth-sche
 export interface AuthActionState {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  /** Báo cho client biết đăng nhập/đăng ký thành công để tự refresh session + điều hướng. */
+  success?: boolean;
+  /** URL cần điều hướng tới khi success === true. */
+  redirectTo?: string;
 }
 
 const DASHBOARD = "/";
+const ONBOARDING = "/onboarding";
 
-/** Đăng nhập bằng email/mật khẩu. Thành công -> redirect /; sai -> trả lỗi. */
+/**
+ * Đăng nhập bằng email/mật khẩu.
+ *
+ * Lưu ý: KHÔNG truyền `redirectTo` cho `signIn` ở server-action. Lý do:
+ * - Khi xác thực thành công, Auth.js v5 set cookie session rồi ném `NEXT_REDIRECT`.
+ * - Next.js sẽ client-side navigate tới `redirectTo`, nhưng `SessionProvider` ở root
+ *   layout KHÔNG tự refetch → `useSession()` vẫn trả về session cũ (null).
+ * - Buộc người dùng phải reload trang mới thấy đã đăng nhập.
+ *
+ * Thay vào đó: trả về `{ success, redirectTo }`, để client form tự gọi
+ * `useSession().update()` + `router.push()` + `router.refresh()` — đảm bảo session
+ * được đồng bộ trước khi điều hướng.
+ */
 export async function loginAction(
   _prev: AuthActionState,
   formData: FormData,
@@ -30,19 +47,17 @@ export async function loginAction(
     await signIn("credentials", {
       email: parsed.data.email.trim().toLowerCase(),
       password: parsed.data.password,
-      redirectTo: DASHBOARD,
     });
   } catch (error) {
-    // signIn ném redirect (NEXT_REDIRECT) khi thành công -> phải re-throw.
     if (error instanceof AuthError) {
       return { error: "Email hoặc mật khẩu không đúng." };
     }
     throw error;
   }
-  return {};
+  return { success: true, redirectTo: DASHBOARD };
 }
 
-/** Đăng ký tài khoản mới rồi tự đăng nhập. */
+/** Đăng ký tài khoản mới rồi tự đăng nhập (qua onboarding cho user mới). */
 export async function registerAction(
   _prev: AuthActionState,
   formData: FormData,
@@ -70,11 +85,10 @@ export async function registerAction(
   });
 
   try {
-    // User mới -> đưa qua onboarding (chỉ hiện 1 lần) trước khi vào dashboard.
+    // Không truyền redirectTo — client sẽ tự điều hướng sau khi update session.
     await signIn("credentials", {
       email,
       password: parsed.data.password,
-      redirectTo: "/onboarding",
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -82,5 +96,5 @@ export async function registerAction(
     }
     throw error;
   }
-  return {};
+  return { success: true, redirectTo: ONBOARDING };
 }

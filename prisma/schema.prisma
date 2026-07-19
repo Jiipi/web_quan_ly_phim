@@ -171,6 +171,7 @@ model WatchProgress {
   seasonNumber  Int       @default(1)
   episodeNumber Int
   watchedAt     DateTime  @default(now())
+  minute        Int?      // Phút user đã xem đến của tập này (0..runtime); null nếu xem hết
   note          String?   @db.Text // Custom note for this specific episode
 
   watchItem     WatchItem @relation(fields: [watchItemId], references: [id], onDelete: Cascade)

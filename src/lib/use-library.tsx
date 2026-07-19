@@ -78,29 +78,32 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   // Chống race: nếu mount/unmount nhanh, huỷ in-flight request cũ.
   const aliveRef = useRef(true);
 
-  const fetchAll = useCallback(async (withLoading: boolean) => {
-    if (status !== "authenticated") {
-      setLoading(false);
-      return;
-    }
-    if (withLoading) setLoading(true);
-    const res = await api.get<LibraryItem[]>("/api/library");
-    if (!aliveRef.current) return;
-    if (res.success && res.data) {
-      setItems(res.data);
-      setError(null);
-    } else {
-      setError(res.error ?? "Không tải được thư viện.");
-    }
-    if (withLoading) setLoading(false);
-  }, [status]);
+  const fetchAll = useCallback(
+    async (withLoading: boolean) => {
+      if (status !== "authenticated") {
+        setLoading(false);
+        return;
+      }
+      if (withLoading) setLoading(true);
+      const res = await api.get<LibraryItem[]>("/api/library");
+      if (!aliveRef.current) return;
+      if (res.success && res.data) {
+        setItems(res.data);
+        setError(null);
+      } else {
+        setError(res.error ?? "Không tải được thư viện.");
+      }
+      if (withLoading) setLoading(false);
+    },
+    [status],
+  );
 
   const reload = useCallback(() => fetchAll(false), [fetchAll]);
 
   useEffect(() => {
     if (status !== "authenticated") {
-      setLoading(false);
-      return;
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
     }
     aliveRef.current = true;
     const rafId = requestAnimationFrame(async () => {

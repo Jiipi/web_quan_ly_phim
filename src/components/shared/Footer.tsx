@@ -32,7 +32,7 @@ export function Footer() {
     <footer
       className={cn(
         "relative border-t border-primary/20 bg-bg/40 backdrop-blur-md w-full z-10 transition-all",
-        hasBottomNav ? "pb-24 lg:pb-12" : "pb-12"
+        hasBottomNav ? "pb-24 lg:pb-12" : "pb-12",
       )}
     >
       {/* Neon glowing line on top */}
@@ -48,8 +48,10 @@ export function Footer() {
           {/* Column 1: Brand & Logo */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2.5 group w-fit">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/20 border border-primary/30 text-primary transition-all duration-300 group-hover:rotate-12 group-hover:bg-primary/30 group-hover:border-primary/50"
-                   style={{ filter: "drop-shadow(0 0 6px oklch(0.72 0.32 330 / 0.4))" }}>
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/20 border border-primary/30 text-primary transition-all duration-300 group-hover:rotate-12 group-hover:bg-primary/30 group-hover:border-primary/50"
+                style={{ filter: "drop-shadow(0 0 6px oklch(0.72 0.32 330 / 0.4))" }}
+              >
                 <Film size={18} />
               </div>
               <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
@@ -57,7 +59,9 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs leading-relaxed text-text-secondary max-w-sm">
-              Hệ điều hành xem phim cá nhân tối tân. Quản lý thư viện phim lẻ, phim bộ, theo dõi tập phim đang xem, tóm tắt nội dung bằng AI không spoil và trực quan hóa gu xem phim của bạn.
+              Hệ điều hành xem phim cá nhân tối tân. Quản lý thư viện phim lẻ, phim bộ, theo dõi tập
+              phim đang xem, tóm tắt nội dung bằng AI không spoil và trực quan hóa gu xem phim của
+              bạn.
             </p>
             {/* TMDb Attribution */}
             <div className="mt-2 flex flex-col gap-1.5 border-l border-primary/10 pl-3">
@@ -74,7 +78,8 @@ export function Footer() {
                 >
                   TMDb
                 </a>
-                . Sản phẩm này sử dụng API của TMDb nhưng không được chứng thực hoặc chứng nhận bởi TMDb.
+                . Sản phẩm này sử dụng API của TMDb nhưng không được chứng thực hoặc chứng nhận bởi
+                TMDb.
               </p>
             </div>
           </div>
@@ -92,7 +97,7 @@ export function Footer() {
                       href="/"
                       className={cn(
                         "text-text-muted transition-colors hover:text-primary",
-                        pathname === "/" && "text-primary font-bold"
+                        pathname === "/" && "text-primary font-bold",
                       )}
                     >
                       {"// Trang chủ"}
@@ -103,7 +108,7 @@ export function Footer() {
                       href="/library"
                       className={cn(
                         "text-text-muted transition-colors hover:text-primary",
-                        pathname?.startsWith("/library") && "text-primary font-bold"
+                        pathname?.startsWith("/library") && "text-primary font-bold",
                       )}
                     >
                       {"// Thư viện"}
@@ -114,7 +119,7 @@ export function Footer() {
                       href="/discover"
                       className={cn(
                         "text-text-muted transition-colors hover:text-primary",
-                        pathname?.startsWith("/discover") && "text-primary font-bold"
+                        pathname?.startsWith("/discover") && "text-primary font-bold",
                       )}
                     >
                       {"// Khám phá"}
@@ -125,7 +130,7 @@ export function Footer() {
                       href="/watchlist"
                       className={cn(
                         "text-text-muted transition-colors hover:text-primary",
-                        pathname?.startsWith("/watchlist") && "text-primary font-bold"
+                        pathname?.startsWith("/watchlist") && "text-primary font-bold",
                       )}
                     >
                       {"// Watchlist"}
@@ -136,7 +141,7 @@ export function Footer() {
                       href="/stats"
                       className={cn(
                         "text-text-muted transition-colors hover:text-primary",
-                        pathname?.startsWith("/stats") && "text-primary font-bold"
+                        pathname?.startsWith("/stats") && "text-primary font-bold",
                       )}
                     >
                       {"// Thống kê"}
@@ -196,7 +201,7 @@ export function Footer() {
                       href="/ai"
                       className={cn(
                         "text-text-muted uppercase tracking-wider transition-colors hover:text-primary",
-                        pathname?.startsWith("/ai") && "text-primary font-bold"
+                        pathname?.startsWith("/ai") && "text-primary font-bold",
                       )}
                     >
                       Trợ lý AI No-Spoil
@@ -208,7 +213,7 @@ export function Footer() {
                       href="/calendar"
                       className={cn(
                         "text-text-muted uppercase tracking-wider transition-colors hover:text-secondary",
-                        pathname?.startsWith("/calendar") && "text-secondary font-bold"
+                        pathname?.startsWith("/calendar") && "text-secondary font-bold",
                       )}
                     >
                       Lịch xem phim
@@ -220,7 +225,7 @@ export function Footer() {
                       href="/lists"
                       className={cn(
                         "text-text-muted uppercase tracking-wider transition-colors hover:text-accent",
-                        pathname?.startsWith("/lists") && "text-accent font-bold"
+                        pathname?.startsWith("/lists") && "text-accent font-bold",
                       )}
                     >
                       Danh sách tùy biến
@@ -232,7 +237,7 @@ export function Footer() {
                       href="/settings"
                       className={cn(
                         "text-text-muted uppercase tracking-wider transition-colors hover:text-text",
-                        pathname?.startsWith("/settings") && "text-text font-bold"
+                        pathname?.startsWith("/settings") && "text-text font-bold",
                       )}
                     >
                       Cài đặt hệ thống
@@ -243,15 +248,21 @@ export function Footer() {
                 <>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-0.5">•</span>
-                    <span className="text-text-secondary text-xs">Theo dõi tiến độ phim lẻ & phim bộ chuẩn xác</span>
+                    <span className="text-text-secondary text-xs">
+                      Theo dõi tiến độ phim lẻ & phim bộ chuẩn xác
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-secondary mt-0.5">•</span>
-                    <span className="text-text-secondary text-xs">Đồ thị thống kê thói quen & gu xem phim</span>
+                    <span className="text-text-secondary text-xs">
+                      Đồ thị thống kê thói quen & gu xem phim
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent mt-0.5">•</span>
-                    <span className="text-text-secondary text-xs">Tóm tắt tập phim cá nhân hóa không spoil</span>
+                    <span className="text-text-secondary text-xs">
+                      Tóm tắt tập phim cá nhân hóa không spoil
+                    </span>
                   </li>
                 </>
               )}
@@ -263,7 +274,7 @@ export function Footer() {
         <div className="mt-12 flex flex-col items-center gap-4 border-t border-primary/10 py-6 font-mono text-[10px] uppercase tracking-widest text-text-muted sm:flex-row sm:justify-between">
           <div className="flex items-center gap-1">
             <span>© {new Date().getFullYear()} CINEOS</span>
-            <span>//</span>
+            <span>{"//"}</span>
             <span className="flex items-center gap-1">
               MADE_WITH <Heart size={10} className="text-primary animate-pulse" /> FOR_CINEPHILES
             </span>

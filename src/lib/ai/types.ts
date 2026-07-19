@@ -33,6 +33,8 @@ export interface AIRecommendInput {
   mood?: string;
   favGenres: string[];
   favCountries: string[];
+  /** Khi true, AI ưu tiên gợi ý phim bộ hơn phim lẻ. */
+  preferTvShows?: boolean;
   libraryTitles: string[];
 }
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Mail, Lock, Loader2, Terminal } from "lucide-react";
 import { loginAction, type AuthActionState } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,18 @@ const initialState: AuthActionState = {};
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
+  const router = useRouter();
+  const { update } = useSession();
+
+  useEffect(() => {
+    if (!state?.success || !state.redirectTo) return;
+    // Đồng bộ SessionProvider trước khi điều hướng — nếu không `useSession()`
+    // ở header vẫn trả về session cũ (null) cho tới khi user reload.
+    void update().then(() => {
+      router.push(state.redirectTo!);
+      router.refresh();
+    });
+  }, [state, router, update]);
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
@@ -52,10 +66,7 @@ export function LoginForm() {
           />
         </div>
         {state.fieldErrors?.email?.map((err) => (
-          <p
-            key={err}
-            className="font-mono text-[10px] uppercase tracking-wider text-dropped"
-          >
+          <p key={err} className="font-mono text-[10px] uppercase tracking-wider text-dropped">
             ⚠ {err}
           </p>
         ))}
@@ -89,10 +100,7 @@ export function LoginForm() {
           />
         </div>
         {state.fieldErrors?.password?.map((err) => (
-          <p
-            key={err}
-            className="font-mono text-[10px] uppercase tracking-wider text-dropped"
-          >
+          <p key={err} className="font-mono text-[10px] uppercase tracking-wider text-dropped">
             ⚠ {err}
           </p>
         ))}

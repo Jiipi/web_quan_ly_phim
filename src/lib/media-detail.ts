@@ -8,6 +8,11 @@ export interface DetailInitial {
   status: string | null;
   currentEpisode: number;
   currentMinute: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastWatchedAt: string | null;
+  /** Map episodeNumber -> minute (cho trang chi tiết TV). */
+  episodeMinutes?: Record<number, number | null>;
   tags?: Array<{ tagId: string; tag: { id: string; name: string; color: string } }>;
 }
 
@@ -22,6 +27,9 @@ export async function loadWatchInitial(
     status: null,
     currentEpisode: 0,
     currentMinute: 0,
+    startedAt: null,
+    completedAt: null,
+    lastWatchedAt: null,
   };
   if (!userId) return empty;
   const wi = await db.watchItem.findFirst({
@@ -30,15 +38,26 @@ export async function loadWatchInitial(
       tags: {
         include: { tag: true },
       },
+      progress: {
+        select: { episodeNumber: true, minute: true },
+      },
     },
   });
   if (!wi) return empty;
+  const minutes: Record<number, number | null> = {};
+  for (const p of wi.progress) {
+    minutes[p.episodeNumber] = p.minute ?? null;
+  }
   return {
     inLibrary: true,
     watchItemId: wi.id,
     status: wi.status,
     currentEpisode: wi.currentEpisode,
     currentMinute: wi.currentMinute,
+    startedAt: wi.startedAt?.toISOString() ?? null,
+    completedAt: wi.completedAt?.toISOString() ?? null,
+    lastWatchedAt: wi.lastWatchedAt?.toISOString() ?? null,
+    episodeMinutes: minutes,
     tags: wi.tags,
   };
 }
