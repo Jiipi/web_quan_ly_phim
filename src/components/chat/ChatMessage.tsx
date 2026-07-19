@@ -47,30 +47,41 @@ function parseInlineStyles(text: string): React.ReactNode[] {
 
     const label = match[1];
     const url = match[2];
-    const isInternal = url.startsWith("/") || url.startsWith("./") || url.startsWith("../");
+    const isSafeUrl =
+      url.startsWith("/") ||
+      url.startsWith("./") ||
+      url.startsWith("../") ||
+      url.startsWith("http://") ||
+      url.startsWith("https://");
 
-    if (isInternal) {
-      result.push(
-        <Link
-          key={match.index}
-          href={url}
-          className="text-primary hover:text-primary-hover font-semibold underline transition-colors"
-        >
-          {label}
-        </Link>,
-      );
+    if (isSafeUrl) {
+      const isInternal = url.startsWith("/") || url.startsWith("./") || url.startsWith("../");
+
+      if (isInternal) {
+        result.push(
+          <Link
+            key={match.index}
+            href={url}
+            className="text-primary hover:text-primary-hover font-semibold underline transition-colors"
+          >
+            {label}
+          </Link>,
+        );
+      } else {
+        result.push(
+          <a
+            key={match.index}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary-hover font-semibold underline transition-colors"
+          >
+            {label}
+          </a>,
+        );
+      }
     } else {
-      result.push(
-        <a
-          key={match.index}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:text-primary-hover font-semibold underline transition-colors"
-        >
-          {label}
-        </a>,
-      );
+      result.push(`[${label}](${url})`);
     }
 
     lastIndex = linkRegex.lastIndex;
