@@ -15,7 +15,8 @@ import { TopicFilter } from "@/components/topics/TopicFilter";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
 
 interface DiscoverResult {
-  tmdbId: number;
+  id?: number;
+  tmdbId?: number;
   title: string;
   originalTitle: string;
   mediaType: "movie" | "tv";
@@ -47,18 +48,22 @@ export default function DiscoverPage() {
   const [discovery, setDiscovery] = useState<DiscoveryData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  function toMovieRowItem(r: DiscoverResult) {
+  function toMovieRowItem(r: DiscoverResult, idx: number) {
+    const rawId = r?.tmdbId ?? r?.id;
+    const validTmdbId = typeof rawId === "number" && !isNaN(rawId) && rawId > 0 ? rawId : null;
+    const uniqueId = validTmdbId ? `${r.mediaType || "movie"}-${validTmdbId}` : `disc-item-${idx}`;
     return {
-      id: String(r.tmdbId),
-      tmdbId: r.tmdbId,
-      mediaType: r.mediaType,
-      title: r.title,
-      originalTitle: r.originalTitle,
-      posterPath: r.posterPath,
-      rating: r.rating,
-      releaseDate: r.releaseDate,
-      onAdd: () => openQuickAdd({ id: r.tmdbId, type: r.mediaType }),
-      onPlay: () => router.push(`/${r.mediaType === "tv" ? "show" : "movie"}/${r.tmdbId}`),
+      id: uniqueId,
+      tmdbId: validTmdbId ?? 0,
+      mediaType: r?.mediaType || "movie",
+      title: r?.title || "Chưa có tiêu đề",
+      originalTitle: r?.originalTitle || "",
+      posterPath: r?.posterPath || null,
+      rating: r?.rating || 0,
+      releaseDate: r?.releaseDate || null,
+      onAdd: () => validTmdbId && openQuickAdd({ id: validTmdbId, type: r.mediaType }),
+      onPlay: () =>
+        validTmdbId && router.push(`/${r.mediaType === "tv" ? "show" : "movie"}/${validTmdbId}`),
     };
   }
   const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true);
@@ -87,15 +92,12 @@ export default function DiscoverPage() {
           }
         }
 
-        console.log("All results before dedup:", allResults.length);
-
-        console.log("All results before dedup:", allResults.length);
-
-        // Deduplicate by tmdbId
+        // Deduplicate by tmdbId or id
         const seen = new Set<number>();
         const unique = allResults.filter((r) => {
-          if (seen.has(r.tmdbId)) return false;
-          seen.add(r.tmdbId);
+          const targetId = r.tmdbId ?? r.id;
+          if (!targetId || seen.has(targetId)) return false;
+          seen.add(targetId);
           return true;
         });
 

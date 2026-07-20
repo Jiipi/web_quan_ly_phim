@@ -11,6 +11,7 @@ export interface DetailInitial {
   startedAt: string | null;
   completedAt: string | null;
   lastWatchedAt: string | null;
+  notes: string | null;
   /** Map episodeNumber -> minute (cho trang chi tiết TV). */
   episodeMinutes?: Record<number, number | null>;
   tags?: Array<{ tagId: string; tag: { id: string; name: string; color: string } }>;
@@ -30,6 +31,7 @@ export async function loadWatchInitial(
     startedAt: null,
     completedAt: null,
     lastWatchedAt: null,
+    notes: null,
   };
   if (!userId) return empty;
   const wi = await db.watchItem.findFirst({
@@ -57,6 +59,7 @@ export async function loadWatchInitial(
     startedAt: wi.startedAt?.toISOString() ?? null,
     completedAt: wi.completedAt?.toISOString() ?? null,
     lastWatchedAt: wi.lastWatchedAt?.toISOString() ?? null,
+    notes: wi.notes ?? null,
     episodeMinutes: minutes,
     tags: wi.tags,
   };

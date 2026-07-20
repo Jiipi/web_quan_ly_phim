@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { LibraryProvider, useLibrary, type LibraryItem } from "@/lib/use-library";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { HeroBanner, type HeroBannerItem } from "@/components/shared/HeroBanner";
@@ -484,7 +485,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const userName = session?.user?.name || "Người dùng";
   const userEmail = session?.user?.email || "";
-  const userInitial = (session?.user?.name || session?.user?.email || "U").charAt(0).toUpperCase();
+  const userImage = session?.user?.image || null;
 
   const [cmdOpen, setCmdOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -633,9 +634,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setIsDropdownOpen((o) => !o)}
                 className="flex items-center gap-1.5 rounded-full border border-white/8 bg-white/3 hover:bg-white/5 px-2.5 py-1.5 transition-colors focus:outline-none"
               >
-                <div className="w-5.5 h-5.5 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-[10px]">
-                  {userInitial}
-                </div>
+                <UserAvatar src={userImage} name={userName} size="xs" />
                 <ChevronDown
                   size={12}
                   className={cn(

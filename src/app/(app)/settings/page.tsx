@@ -1,7 +1,21 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { User, Key, Loader2, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  User,
+  Key,
+  Loader2,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Camera,
+  Save,
+  Calendar,
+  Film,
+  Star,
+  MessageSquare,
+  Shield,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -11,15 +25,31 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FadeIn } from "@/components/motion/FadeIn";
-import { usePreferences, DEFAULT_PREFERENCES, type Preferences } from "@/lib/use-preferences";
+import { usePreferences, type Preferences } from "@/lib/use-preferences";
 import { RATING_SCALES, RATING_SCALE_LABELS } from "@/lib/rating-scale";
 import { useT } from "@/lib/i18n";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface TmdbStatus {
   serverKeyConfigured: boolean;
   userKeySet: boolean;
   activeSource: "user" | "server" | "mock";
   lastCheckedAt: string;
+}
+
+interface ProfileData {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  bio: string | null;
+  role: string;
+  memberSince: string;
+  stats: {
+    watchItems: number;
+    reviews: number;
+    ratings: number;
+  };
 }
 
 const POPULAR_GENRES = [
@@ -52,13 +82,107 @@ const POPULAR_COUNTRIES = [
 ] as const;
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const { pref, update, loaded } = usePreferences();
   const { t } = useT();
+  const { success, error: toastError } = useToast();
 
-  const userName = session?.user?.name || "Người dùng";
-  const userEmail = session?.user?.email || "";
-  const userInitial = (session?.user?.name || session?.user?.email || "U").charAt(0).toUpperCase();
+  // Profile state
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Load profile on mount
+  const fetchProfile = useCallback(async () => {
+    setLoadingProfile(true);
+    const res = await api.get<{ profile: ProfileData }>("/api/settings/profile");
+    if (res.success && res.data?.profile) {
+      const p = res.data.profile;
+      setProfile(p);
+      setDisplayName(p.name || "");
+      setBio(p.bio || "");
+      setAvatarPreview(p.image || null);
+    }
+    setLoadingProfile(false);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void fetchProfile();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchProfile]);
+
+  // Avatar file picker
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toastError("Ảnh tối đa 2MB.");
+      return;
+    }
+
+    setAvatarFile(file);
+    // Preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAvatarPreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Save profile
+  async function handleSaveProfile() {
+    setSavingProfile(true);
+
+    const formData = new FormData();
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
+    }
+    formData.append("name", displayName);
+    formData.append("bio", bio);
+
+    try {
+      const res = await fetch("/api/settings/profile", {
+        method: "PATCH",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (data.success && data.profile) {
+        setProfile((prev) => (prev ? { ...prev, ...data.profile } : prev));
+        setAvatarFile(null);
+        setAvatarPreview(data.profile.image || null);
+
+        // Update NextAuth session to reflect new avatar/name instantly
+        await updateSession({
+          image: data.profile.image,
+          name: data.profile.name,
+        });
+
+        success("Đã cập nhật hồ sơ cá nhân!");
+      } else {
+        toastError(data.error || "Không thể cập nhật.");
+      }
+    } catch {
+      toastError("Lỗi kết nối máy chủ.");
+    }
+
+    setSavingProfile(false);
+  }
+
+  const memberSince = profile?.memberSince
+    ? new Date(profile.memberSince).toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "—";
 
   return (
     <FadeIn className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -67,33 +191,146 @@ export default function SettingsPage() {
         <p className="mt-1 text-xs text-text-secondary">{t("settings.subtitle")}</p>
       </div>
 
-      {!loaded ? (
+      {!loaded || loadingProfile ? (
         <Card>
           <CardContent className="flex flex-col gap-3 p-5">
-            <Skeleton className="h-12 w-full" />
             <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Section: Cá nhân */}
-          <Card>
-            <CardContent className="flex flex-col gap-5 p-5">
-              <SectionTitle icon={<User size={14} />}>{t("settings.section.account")}</SectionTitle>
-              <div className="flex items-center gap-4 rounded-xl border border-white/5 bg-card/20 p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-lg font-bold text-primary">
-                  {userInitial}
+          {/* ===== PROFILE CARD ===== */}
+          <Card className="overflow-hidden">
+            {/* Banner gradient */}
+            <div className="relative h-28 bg-gradient-to-br from-primary/40 via-secondary/20 to-primary/10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,oklch(0.72_0.32_330_/_0.3),transparent_70%)]" />
+              {profile?.role === "admin" && (
+                <Badge
+                  variant="outline"
+                  className="absolute right-4 top-4 border-primary/50 bg-primary/20 text-primary"
+                >
+                  <Shield size={11} className="mr-1" /> Admin
+                </Badge>
+              )}
+            </div>
+
+            <CardContent className="relative px-6 pb-6 pt-0">
+              {/* Avatar overlapping banner */}
+              <div className="relative -mt-14 mb-4 flex items-end gap-4">
+                <div className="group relative">
+                  <UserAvatar
+                    src={avatarPreview}
+                    name={displayName || session?.user?.name || "U"}
+                    size="xl"
+                    glow
+                    className="ring-4 ring-bg"
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <Camera size={20} />
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-text">{userName}</h4>
-                  <p className="text-xs text-text-muted">{userEmail}</p>
+                <div className="mb-1 flex-1">
+                  <h2 className="text-lg font-extrabold text-text">
+                    {displayName || session?.user?.name || "Người dùng"}
+                  </h2>
+                  <p className="text-xs text-text-muted">{session?.user?.email || ""}</p>
                 </div>
               </div>
 
-              <Divider />
+              {/* Stats row */}
+              <div className="mb-5 grid grid-cols-3 gap-3">
+                <StatCard
+                  icon={<Film size={14} />}
+                  label="Phim theo dõi"
+                  value={profile?.stats.watchItems ?? 0}
+                />
+                <StatCard
+                  icon={<Star size={14} />}
+                  label="Đánh giá"
+                  value={profile?.stats.ratings ?? 0}
+                />
+                <StatCard
+                  icon={<MessageSquare size={14} />}
+                  label="Nhận xét"
+                  value={profile?.stats.reviews ?? 0}
+                />
+              </div>
 
-              <SectionTitle>{t("settings.section.display")}</SectionTitle>
+              {/* Member since */}
+              <div className="mb-5 flex items-center gap-2 rounded-lg border border-white/5 bg-white/3 px-3 py-2 text-[10px] text-text-muted">
+                <Calendar size={12} />
+                <span>Thành viên từ {memberSince}</span>
+              </div>
+
+              {/* Edit fields */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="display-name"
+                    className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    Tên hiển thị
+                  </label>
+                  <Input
+                    id="display-name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    maxLength={50}
+                    placeholder="Nhập tên hiển thị của bạn..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="bio-input"
+                    className="text-[10px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    Về tôi
+                  </label>
+                  <textarea
+                    id="bio-input"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    placeholder="Giới thiệu đôi dòng về bản thân, gu xem phim của bạn..."
+                    className="w-full rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white placeholder:text-text-muted focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary leading-relaxed resize-y"
+                  />
+                  <span className="self-end text-[10px] font-mono text-text-muted">
+                    {bio.length}/500
+                  </span>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button onClick={handleSaveProfile} disabled={savingProfile} className="gap-1.5">
+                    {savingProfile ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Save size={14} />
+                    )}
+                    {savingProfile ? "Đang lưu..." : "Lưu hồ sơ"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ===== DISPLAY & PREFERENCES ===== */}
+          <Card>
+            <CardContent className="flex flex-col gap-5 p-5">
+              <SectionTitle icon={<User size={14} />}>{t("settings.section.display")}</SectionTitle>
               <div className="grid gap-4 text-xs sm:grid-cols-2">
                 <Field label={t("settings.theme.label")}>
                   <select
@@ -171,6 +408,20 @@ export default function SettingsPage() {
         </>
       )}
     </FadeIn>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Stat card                                                           */
+/* ------------------------------------------------------------------ */
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1 rounded-xl border border-white/5 bg-white/3 p-3 text-center">
+      <div className="flex items-center gap-1.5 text-text-muted">{icon}</div>
+      <span className="text-lg font-extrabold text-text">{value}</span>
+      <span className="text-[10px] text-text-muted">{label}</span>
+    </div>
   );
 }
 

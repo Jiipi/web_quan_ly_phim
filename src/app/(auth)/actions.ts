@@ -47,6 +47,7 @@ export async function loginAction(
     await signIn("credentials", {
       email: parsed.data.email.trim().toLowerCase(),
       password: parsed.data.password,
+      redirect: false,
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -89,6 +90,7 @@ export async function registerAction(
     await signIn("credentials", {
       email,
       password: parsed.data.password,
+      redirect: false,
     });
   } catch (error) {
     if (error instanceof AuthError) {

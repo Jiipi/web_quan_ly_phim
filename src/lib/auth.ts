@@ -7,6 +7,7 @@ import { env, features } from "@/lib/env";
 import { authorizeCredentials } from "@/lib/auth-credentials";
 import { authConfig } from "@/auth.config";
 import { logAudit } from "@/lib/audit";
+import { ROLES } from "@/types/role";
 
 const providers: NextAuthConfig["providers"] = [
   CredentialsProvider({
@@ -37,18 +38,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   callbacks: {
     ...authConfig.callbacks,
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateSession }) {
       if (user) {
         token.id = user.id;
-        token.role = ((user as unknown as Record<string, unknown>).role as string) || "user";
+        token.role = user.role || "user";
+        token.image = user.image || null;
+        token.name = user.name || null;
       }
-      if (user?.id) {
+      if (trigger === "update" && updateSession) {
+        if (updateSession.image !== undefined) token.image = updateSession.image;
+        if (updateSession.name !== undefined) token.name = updateSession.name;
+      }
+      const userId = (token.id as string) || user?.id;
+      if (userId) {
         const dbUser = await db.user.findUnique({
-          where: { id: user.id },
-          select: { role: true },
+          where: { id: userId },
+          select: { role: true, image: true, name: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
+          token.image = dbUser.image;
+          token.name = dbUser.name;
         }
       }
       return token;
@@ -56,7 +66,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = (token.role as string) || "user";
+        session.user.role = (token.role as string) ?? ROLES[0];
+        session.user.image = (token.image as string) ?? null;
+        if (token.name) session.user.name = token.name as string;
       }
       return session;
     },

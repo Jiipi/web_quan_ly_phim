@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { authConfig } from "@/auth.config";
+import { isAdmin } from "@/types/role";
 
 // Next 16 đổi tên "middleware" -> "proxy". Instance Auth.js đọc session từ JWT (không đụng DB).
 const { auth } = NextAuth(authConfig);
@@ -25,8 +26,8 @@ export default auth((req) => {
 
   // 2. Đã đăng nhập nhưng cố gắng truy cập route Admin mà không có role admin
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const role = (req.auth.user as unknown as Record<string, unknown>)?.role;
-    if (role !== "admin") {
+    const role = req.auth?.user?.role;
+    if (!isAdmin(role as string)) {
       if (pathname.startsWith("/api/")) {
         return new NextResponse(JSON.stringify({ error: "Quyền truy cập bị từ chối." }), {
           status: 403,
@@ -59,6 +60,8 @@ export const config = {
     "/show/:path*",
     "/lists/:path*",
     "/onboarding/:path*",
+    "/community/:path*",
+    "/u/:path*",
     "/admin/:path*",
     "/api/admin/:path*",
   ],

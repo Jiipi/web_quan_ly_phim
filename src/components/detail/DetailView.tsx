@@ -14,6 +14,8 @@ import {
   Save,
   Bell,
   Trash2,
+  NotebookPen,
+  Loader2,
 } from "lucide-react";
 import type { MediaDetail, DetailInitial } from "@/lib/media-detail";
 import { PosterImage } from "@/components/shared/PosterImage";
@@ -25,6 +27,7 @@ import { api } from "@/lib/api";
 import { cn, formatDate, toDateInputValue } from "@/lib/utils";
 import { countryLabel, STATUS_OPTIONS } from "@/lib/labels";
 import { TagAssignment } from "@/components/tags/TagAssignment";
+import { MovieDiscussion } from "@/components/community/MovieDiscussion";
 
 /** 1 ô hiển thị thông tin mốc thời gian (read-only). */
 function TimelineStat({
@@ -198,6 +201,24 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
   const [epInput, setEpInput] = useState(String(initial.currentEpisode));
   const [minuteInput, setMinuteInput] = useState(String(initial.currentMinute));
   const [currentTags, setCurrentTags] = useState(initial.tags ?? []);
+  const [notes, setNotes] = useState<string>(initial.notes ?? "");
+  const [savingNotes, setSavingNotes] = useState(false);
+
+  async function saveNotes() {
+    if (!watchItemId) return;
+    setSavingNotes(true);
+    const res = await api.patch("/api/library", { watchItemId, notes });
+    setSavingNotes(false);
+    if (res.success) {
+      success("Đã ghi nhận ghi chú cá nhân!");
+    } else {
+      toastError(res.error ?? "Không thể lưu ghi chú.");
+    }
+  }
+
+  function insertNoteTemplate(template: string) {
+    setNotes((prev) => (prev ? `${prev}\n${template}` : template));
+  }
 
   // Reminders state & handlers
   const [reminders, setReminders] = useState<
@@ -702,6 +723,72 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
               </button>
             </div>
           </section>
+
+          {/* Personal Notes Section */}
+          <section className="glass-card p-5 flex flex-col gap-3 md:col-span-2">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <NotebookPen size={15} className="text-secondary" />
+                Ghi chú cá nhân (Nhật ký xem phim & Mốc thời gian)
+              </h3>
+              <button
+                type="button"
+                onClick={saveNotes}
+                disabled={savingNotes}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/20 border border-secondary/40 px-3.5 py-1.5 text-xs font-bold text-secondary hover:bg-secondary/30 transition-all disabled:opacity-50"
+              >
+                {savingNotes ? <Loader2 className="animate-spin" size={13} /> : <Save size={13} />}
+                {savingNotes ? "Đang lưu..." : "Lưu ghi chú"}
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder="Nhập ghi chú cá nhân (ví dụ: Tập 7 xem tới phút 23:45, phân cảnh chiến đấu rất hay...)"
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-white placeholder:text-text-muted focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary leading-relaxed resize-y"
+              />
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                  <span className="text-text-muted font-mono">Chèn nhanh:</span>
+                  {isTv && currentEpisode > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        insertNoteTemplate(
+                          `📌 Tập ${currentEpisode}${currentMinute > 0 ? ` (phút ${currentMinute})` : ""}: `,
+                        )
+                      }
+                      className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-text-secondary hover:bg-white/10 hover:text-white transition-all font-mono"
+                    >
+                      + Tập {currentEpisode} {currentMinute > 0 ? `(${currentMinute}m)` : ""}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => insertNoteTemplate("🎬 Đoạn phim ấn tượng: ")}
+                    className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-text-secondary hover:bg-white/10 hover:text-white transition-all font-mono"
+                  >
+                    + Đoạn phim ấn tượng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertNoteTemplate("⭐ Đánh giá nhanh: ")}
+                    className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-text-secondary hover:bg-white/10 hover:text-white transition-all font-mono"
+                  >
+                    + Đánh giá nhanh
+                  </button>
+                </div>
+
+                <span className="text-[10px] font-mono text-text-muted">
+                  {notes.length} / 5000 ký tự
+                </span>
+              </div>
+            </div>
+          </section>
         </div>
       )}
 
@@ -816,8 +903,15 @@ export function DetailView({ detail, initial }: { detail: MediaDetail; initial: 
         </section>
       )}
 
-      {/* Đánh giá + review (khi phim đã ở trong thư viện) */}
-      {inLibrary && watchItemId && <RatingReviewPanel watchItemId={watchItemId} />}
+      {/* Community Discussion Hub */}
+      <section aria-label="Thảo luận cộng đồng" className="mt-8 border-t border-white/10 pt-6">
+        <MovieDiscussion
+          tmdbId={detail.tmdbId}
+          type={detail.mediaType}
+          title={detail.title}
+          posterPath={detail.posterPath}
+        />
+      </section>
 
       <Link href="/library" className="text-xs font-semibold text-secondary hover:underline">
         ← Về thư viện

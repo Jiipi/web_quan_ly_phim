@@ -13,7 +13,6 @@ import {
   List,
   BarChart3,
   Plus,
-  Bell,
   ChevronDown,
   PlayCircle,
   Layers,
@@ -21,14 +20,17 @@ import {
   Sparkles,
   Settings,
   LogOut,
-  Terminal,
   Shield,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { useT } from "@/lib/i18n";
+import { isAdmin } from "@/types/role";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { NotificationBell } from "@/components/community/NotificationBell";
 
 const PUBLIC_NAV_LINKS = [
   { key: "nav.features", href: "/#features" },
@@ -40,6 +42,7 @@ const AUTH_MAIN_NAV = [
   { nameKey: "nav.home", href: "/", icon: <Home size={16} /> },
   { nameKey: "nav.library", href: "/library", icon: <Film size={16} /> },
   { nameKey: "nav.discover", href: "/discover", icon: <Search size={16} /> },
+  { nameKey: "nav.community", href: "/community", icon: <Users size={16} /> },
   { nameKey: "nav.watchlist", href: "/watchlist", icon: <List size={16} /> },
   { nameKey: "nav.stats", href: "/stats", icon: <BarChart3 size={16} /> },
 ];
@@ -56,71 +59,20 @@ export function AppHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
-  const isAdmin = (session?.user as Record<string, unknown>)?.role === "admin";
+  const userIsAdmin = isAdmin(session?.user?.role ?? "");
   const { t } = useT();
 
   const userName = session?.user?.name || "Người dùng";
   const userEmail = session?.user?.email || "";
-  const userInitial = (session?.user?.name || session?.user?.email || "U").charAt(0).toUpperCase();
+  const userImage = session?.user?.image || null;
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
-
-  // Mock Notifications state
-  const [notifications, setNotifications] = useState([
-    {
-      id: "notif-1",
-      type: "ai",
-      title: "Gợi ý phim từ Trợ lý AI",
-      message:
-        "Dựa trên thư viện và gu xem phim của bạn, AI vừa đề xuất bộ phim 'Dune: Part Two'. Thử xem nhé!",
-      time: "10 phút trước",
-      read: false,
-    },
-    {
-      id: "notif-2",
-      type: "streak",
-      title: "Đạt mốc Streak mới! 🔥",
-      message:
-        "Chúc mừng! Bạn đã duy trì thói quen xem phim 5 ngày liên tiếp. Hãy tiếp tục duy trì nhé!",
-      time: "2 giờ trước",
-      read: false,
-    },
-    {
-      id: "notif-3",
-      type: "reminder",
-      title: "Lịch phát sóng hôm nay",
-      message: "Tập mới của bộ phim 'House of the Dragon' bạn đang theo dõi sẽ phát sóng tối nay.",
-      time: "5 giờ trước",
-      read: true,
-    },
-    {
-      id: "notif-4",
-      type: "system",
-      title: "Cập nhật hệ thống CineOS v3.0",
-      message:
-        "Chào mừng đến với hệ điều hành xem phim cá nhân mới. Khám phá các tính năng AI ngay!",
-      time: "1 ngày trước",
-      read: true,
-    },
-  ]);
-
-  const hasUnread = notifications.some((n) => !n.read);
 
   const { openQuickAdd } = useQuickAdd();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const handleToggleRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-  };
 
   useEffect(() => {
     function onScroll() {
@@ -134,9 +86,6 @@ export function AppHeader() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setIsNotifOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -213,7 +162,7 @@ export function AppHeader() {
                   );
                 })}
 
-                {isAdmin && (
+                {userIsAdmin && (
                   <Link
                     href="/admin"
                     className={cn(
@@ -287,118 +236,7 @@ export function AppHeader() {
                 <ThemeToggle />
 
                 {/* Notifications */}
-                <div className="relative" ref={notifRef}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsNotifOpen(!isNotifOpen);
-                      setIsDropdownOpen(false);
-                    }}
-                    aria-label={t("nav.notifications")}
-                    title={t("nav.notifications")}
-                    className="relative rounded-md border border-transparent p-2 text-text-secondary transition-all hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
-                  >
-                    <Bell
-                      size={16}
-                      style={{
-                        filter: "drop-shadow(0 0 4px transparent)",
-                      }}
-                    />
-                    {hasUnread && (
-                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary pulse-glow" />
-                    )}
-                  </button>
-
-                  {isNotifOpen && (
-                    <div className="absolute right-0 mt-2 w-80 sm:w-96 overflow-hidden rounded-xl border border-primary/40 bg-bg/95 p-1.5 dark:shadow-[0_0_24px_var(--neon-pink-soft)] backdrop-blur-xl z-50 animate-fade-in-up">
-                      <div className="flex items-center justify-between border-b border-primary/20 px-3.5 py-2.5">
-                        <span className="font-mono text-xs font-bold text-text uppercase tracking-wider">
-                          {t("nav.notifications")}
-                        </span>
-                        {hasUnread && (
-                          <button
-                            type="button"
-                            onClick={handleMarkAllAsRead}
-                            className="font-mono text-[9px] font-bold uppercase tracking-wider text-secondary hover:text-secondary-hover transition-colors"
-                          >
-                            {t("notifications.mark-all-read")}
-                          </button>
-                        )}
-                      </div>
-                      <div className="max-h-80 overflow-y-auto py-1 divide-y divide-primary/10">
-                        {notifications.length === 0 ? (
-                          <div className="py-8 text-center text-xs text-text-muted">
-                            {t("notifications.empty")}
-                          </div>
-                        ) : (
-                          notifications.map((notif) => {
-                            let Icon = Bell;
-                            let iconColor = "text-text-muted bg-surface/50 border-border";
-                            if (notif.type === "ai") {
-                              Icon = Sparkles;
-                              iconColor =
-                                "text-secondary bg-secondary/15 border-secondary/30 dark:shadow-[0_0_8px_var(--neon-cyan-soft)]";
-                            } else if (notif.type === "streak") {
-                              Icon = BarChart3;
-                              iconColor =
-                                "text-primary bg-primary/15 border-primary/30 dark:shadow-[0_0_8px_var(--neon-pink-soft)]";
-                            } else if (notif.type === "reminder") {
-                              Icon = Calendar;
-                              iconColor =
-                                "text-accent bg-accent/15 border-accent/30 dark:shadow-[0_0_8px_var(--neon-violet-soft)]";
-                            } else if (notif.type === "system") {
-                              Icon = Terminal;
-                              iconColor = "text-text bg-card border-border";
-                            }
-
-                            return (
-                              <div
-                                key={notif.id}
-                                onClick={() => handleToggleRead(notif.id)}
-                                className={cn(
-                                  "flex gap-3 px-3.5 py-3 transition-colors cursor-pointer text-left relative",
-                                  notif.read
-                                    ? "hover:bg-white/5"
-                                    : "bg-primary/5 hover:bg-primary/10",
-                                )}
-                              >
-                                <div
-                                  className={cn(
-                                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs",
-                                    iconColor,
-                                  )}
-                                >
-                                  <Icon size={14} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-1.5">
-                                    <p
-                                      className={cn(
-                                        "text-xs font-bold truncate",
-                                        notif.read ? "text-white/90" : "text-white",
-                                      )}
-                                    >
-                                      {notif.title}
-                                    </p>
-                                    {!notif.read && (
-                                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                                    )}
-                                  </div>
-                                  <p className="mt-1 text-[11px] leading-relaxed text-text-secondary break-words">
-                                    {notif.message}
-                                  </p>
-                                  <span className="mt-1.5 block font-mono text-[9px] text-text-muted">
-                                    {notif.time}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <NotificationBell />
 
                 {/* User Dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -407,9 +245,7 @@ export function AppHeader() {
                     onClick={() => setIsDropdownOpen((o) => !o)}
                     className="flex items-center gap-1.5 rounded-md border border-secondary/40 bg-secondary/5 px-2.5 py-1.5 transition-all hover:border-secondary/80 dark:hover:shadow-[0_0_12px_var(--neon-cyan-soft)] focus:outline-none"
                   >
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 font-mono text-[11px] font-bold text-primary glow-text">
-                      {userInitial}
-                    </div>
+                    <UserAvatar src={userImage} name={userName} size="xs" />
                     <ChevronDown
                       size={12}
                       className={cn(
@@ -428,7 +264,7 @@ export function AppHeader() {
                         </p>
                       </div>
                       <div className="py-1">
-                        {isAdmin && (
+                        {userIsAdmin && (
                           <Link
                             href="/admin"
                             onClick={() => setIsDropdownOpen(false)}

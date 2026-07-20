@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/session";
 import { db } from "@/lib/db";
-import { logAudit } from "@/lib/audit";
+import { logAdminAction, ADMIN_ACTIONS } from "@/lib/audit";
+import { enforceRateLimit } from "@/lib/api-guard";
+import { isAdmin, ROLES, isValidRole } from "@/types/role";
 
 export async function GET() {
   try {
@@ -9,7 +11,7 @@ export async function GET() {
     if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
 
     const userAdmin = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (userAdmin?.role !== "admin") {
+    if (!isAdmin(userAdmin?.role ?? "")) {
       return NextResponse.json({ error: "Quyền truy cập bị từ chối." }, { status: 403 });
     }
 
@@ -39,8 +41,11 @@ export async function PATCH(req: NextRequest) {
     const userId = await getCurrentUserId();
     if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
 
+    const rl = enforceRateLimit(`admin:users:patch:${userId}`, 10, 60_000);
+    if (rl) return rl;
+
     const userAdmin = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (userAdmin?.role !== "admin") {
+    if (!isAdmin(userAdmin?.role ?? "")) {
       return NextResponse.json({ error: "Quyền truy cập bị từ chối." }, { status: 403 });
     }
 
@@ -50,7 +55,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { targetUserId, role } = body;
-    if (!["user", "admin"].includes(role)) {
+    if (!isValidRole(role)) {
       return NextResponse.json({ error: "Quyền hạn không hợp lệ." }, { status: 400 });
     }
 
@@ -67,7 +72,10 @@ export async function PATCH(req: NextRequest) {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    await logAudit(userId, "user.role_change", { targetUserId, nextRole: role });
+    await logAdminAction(userId, ADMIN_ACTIONS.USER_TOGGLE_ROLE, `user:${targetUserId}`, {
+      previousRole: role === "admin" ? "user" : "admin",
+      newRole: role,
+    });
 
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (err: unknown) {

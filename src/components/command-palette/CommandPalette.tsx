@@ -22,6 +22,7 @@ import {
 import { useLibrary } from "@/lib/use-library";
 import { api } from "@/lib/api";
 import { useQuickAdd } from "@/components/shared/QuickAddDialog";
+import { isAdmin } from "@/types/role";
 
 const NAV: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Trang chủ", href: "/", icon: Home },
@@ -50,13 +51,13 @@ function detailHref(mediaType: "movie" | "tv", tmdbId: number) {
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { data: session } = useSession();
-  const isAdmin = (session?.user as Record<string, unknown>)?.role === "admin";
+  const userIsAdmin = isAdmin(session?.user?.role ?? "");
   const { items } = useLibrary();
   const { openQuickAdd } = useQuickAdd();
   const [query, setQuery] = useState("");
   const [tmdbResults, setTmdbResults] = useState<TmdbResult[]>([]);
 
-  const navItems = isAdmin
+  const navItems = userIsAdmin
     ? [...NAV, { label: "Hệ thống Quản trị (Admin)", href: "/admin", icon: Shield }]
     : NAV;
 

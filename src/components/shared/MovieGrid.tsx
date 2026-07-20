@@ -59,16 +59,24 @@ export function MovieGrid({
         className,
       )}
     >
-      {items.map((item, idx) => (
-        <motion.div key={item.id} variants={itemVariants}>
-          <MovieCard
-            {...item}
-            variant="grid"
-            showQuickActions={showQuickActions}
-            priority={idx < 6}
-          />
-        </motion.div>
-      ))}
+      {items.map((item, idx) => {
+        const itemKey =
+          item.id && String(item.id) !== "undefined" && String(item.id) !== "null"
+            ? `${item.id}-${idx}`
+            : item.tmdbId
+              ? `${item.mediaType || "media"}-${item.tmdbId}-${idx}`
+              : `grid-item-${idx}`;
+        return (
+          <motion.div key={itemKey} variants={itemVariants}>
+            <MovieCard
+              {...item}
+              variant="grid"
+              showQuickActions={showQuickActions}
+              priority={idx < 6}
+            />
+          </motion.div>
+        );
+      })}
     </motion.div>
   );
 }

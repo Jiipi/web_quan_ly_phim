@@ -39,6 +39,14 @@ npm run dev
 
 Mở http://localhost:3000.
 
+## Tính năng chính
+
+- 📚 **Thư viện cá nhân**: watchlist, lịch sử xem, danh sách tùy chỉnh, đánh giá nhiều tiêu chí
+- 🎬 **Khám phá phim**: trending, top-rated, theo thể loại/quốc gia — tích hợp TMDb
+- 🤖 **AI Assistant**: chatbot CineBot + tóm tắt phim bộ không spoil + gợi ý theo mood
+- 📊 **Thống kê & cá nhân hoá**: heatmap lịch sử xem, taste profile, calendar
+- 🌐 **Cộng đồng** (`/community`): đăng bài, bình luận, like, follow người dùng khác, news feed xếp theo thuật toán hot, trang cá nhân công khai (`/u/[handle]`), hộp thư thông báo real-time (polling)
+
 ## Tài khoản seed
 
 Sau khi seed, đăng nhập bằng một trong hai tài khoản (mật khẩu: `Password123!`):

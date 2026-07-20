@@ -49,6 +49,11 @@ export const envSchema = z
     // Google OAuth (tùy chọn — thiếu thì tắt nút đăng nhập Google)
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+
+    // Mail (SMTP Gmail App Password — dùng cho form báo lỗi). Tất cả optional.
+    GMAIL_USER: z.string().email("GMAIL_USER phải là email hợp lệ").optional(),
+    GMAIL_APP_PASSWORD: z.string().min(1).optional(),
+    GMAIL_REPORT_TO: z.string().email("GMAIL_REPORT_TO phải là email hợp lệ").optional(),
   })
   .refine((v) => !(v.NODE_ENV === "production" && !v.AUTH_SECRET), {
     message: "AUTH_SECRET là bắt buộc ở môi trường production",
@@ -81,6 +86,8 @@ export interface Features {
   aiProvider: Env["AI_PROVIDER"];
   /** AI sẵn sàng chạy thật (mock luôn sẵn sàng; provider thật cần key tương ứng). */
   aiReady: boolean;
+  /** SMTP Gmail sẵn sàng (đủ user + app password) để gửi mail báo lỗi. */
+  mailerReady: boolean;
 }
 
 export function deriveFeatures(e: Env): Features {
@@ -95,6 +102,7 @@ export function deriveFeatures(e: Env): Features {
     googleOAuth: !!(e.GOOGLE_CLIENT_ID && e.GOOGLE_CLIENT_SECRET),
     aiProvider: e.AI_PROVIDER,
     aiReady,
+    mailerReady: !!(e.GMAIL_USER && e.GMAIL_APP_PASSWORD),
   };
 }
 

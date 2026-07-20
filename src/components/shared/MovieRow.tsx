@@ -141,19 +141,24 @@ export function MovieRow({
 
         <div ref={emblaRef} className="overflow-hidden">
           <div className="-mx-2 flex">
-            {items.map((item, idx) => (
-              <div
-                key={item.id}
-                className="min-w-0 shrink-0 grow-0 basis-[140px] px-2 sm:basis-[160px] md:basis-[180px] lg:basis-[200px]"
-              >
-                <MovieCard
-                  {...item}
-                  variant="grid"
-                  showQuickActions={showQuickActions}
-                  priority={idx < 4}
-                />
-              </div>
-            ))}
+            {items.map((item, idx) => {
+              const itemKey =
+                item.id ||
+                (item.tmdbId ? `${item.mediaType || "media"}-${item.tmdbId}` : `row-item-${idx}`);
+              return (
+                <div
+                  key={itemKey}
+                  className="min-w-0 shrink-0 grow-0 basis-[140px] px-2 sm:basis-[160px] md:basis-[180px] lg:basis-[200px]"
+                >
+                  <MovieCard
+                    {...item}
+                    variant="grid"
+                    showQuickActions={showQuickActions}
+                    priority={idx < 4}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

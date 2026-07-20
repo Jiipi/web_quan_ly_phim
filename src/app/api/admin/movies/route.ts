@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/session";
 import { db } from "@/lib/db";
 import { tmdb } from "@/lib/tmdb";
-import { logAudit } from "@/lib/audit";
+import { logAdminAction, ADMIN_ACTIONS } from "@/lib/audit";
+import { isAdmin } from "@/types/role";
 
 interface TmdbImportDetails {
   title?: string;
@@ -30,7 +31,7 @@ export async function GET() {
     if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
 
     const userAdmin = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (userAdmin?.role !== "admin") {
+    if (!isAdmin(userAdmin?.role ?? "")) {
       return NextResponse.json({ error: "Quyền truy cập bị từ chối." }, { status: 403 });
     }
 
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
 
     const userAdmin = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (userAdmin?.role !== "admin") {
+    if (!isAdmin(userAdmin?.role ?? "")) {
       return NextResponse.json({ error: "Quyền truy cập bị từ chối." }, { status: 403 });
     }
 
@@ -128,12 +129,46 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await logAudit(userId, "document.create", { tmdbId, title: mediaItem.title, type: mediaType });
+    await logAdminAction(userId, ADMIN_ACTIONS.MOVIE_IMPORT, `media:${tmdbId}`, {
+      title: mediaItem.title,
+      type: mediaType,
+    });
 
     return NextResponse.json({ success: true, mediaItem }, { status: 201 });
   } catch (err: unknown) {
     console.error("Admin Movies POST Error:", err);
     return NextResponse.json({ error: "Không thể nhập phim từ TMDb." }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return NextResponse.json({ error: "Yêu cầu đăng nhập." }, { status: 401 });
+
+    const userAdmin = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (!isAdmin(userAdmin?.role ?? "")) {
+      return NextResponse.json({ error: "Quyền truy cập bị từ chối." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const mediaItemId = searchParams.get("id");
+    if (!mediaItemId) {
+      return NextResponse.json({ error: "Thiếu tham số ID phim cần xóa." }, { status: 400 });
+    }
+
+    const deleted = await db.mediaItem.delete({
+      where: { id: mediaItemId },
+    });
+
+    await logAdminAction(userId, ADMIN_ACTIONS.MOVIE_DELETE, `media:${mediaItemId}`, {
+      title: deleted.title,
+    });
+
+    return NextResponse.json({ success: true, deletedId: deleted.id });
+  } catch (err: unknown) {
+    console.error("Admin Movies DELETE Error:", err);
+    return NextResponse.json({ error: "Không thể xóa phim khỏi kho lưu trữ." }, { status: 500 });
   }
 }
 
