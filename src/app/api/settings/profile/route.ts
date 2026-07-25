@@ -1,12 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId } from "@/lib/session";
 import { db } from "@/lib/db";
+import { put, del } from "@vercel/blob";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
 
 const AVATAR_DIR = path.join(process.cwd(), "public", "uploads", "avatars");
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+/**
+ * Upload avatar to Vercel Blob (production) or local disk (development).
+ * Returns the public URL of the uploaded image.
+ */
+async function uploadAvatar(
+  file: File,
+  userId: string,
+): Promise<{ url: string; storage: "blob" | "local" }> {
+  const extMap: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  const ext = extMap[file.type] || "jpg";
+  const filename = `avatars/${userId}.${ext}`;
+
+  // Try Vercel Blob first (works on Vercel production & preview)
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(filename, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
+    return { url: blob.url, storage: "blob" };
+  }
+
+  // Fallback to local disk (development)
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await mkdir(AVATAR_DIR, { recursive: true });
+  const localFilename = `${userId}.${ext}`;
+  const filePath = path.join(AVATAR_DIR, localFilename);
+  await writeFile(filePath, buffer);
+  return { url: `/uploads/avatars/${localFilename}?t=${Date.now()}`, storage: "local" };
+}
 
 // GET /api/settings/profile — return current user profile
 export async function GET() {
@@ -88,32 +124,27 @@ export async function PATCH(req: NextRequest) {
           return NextResponse.json({ error: "Kích thước ảnh tối đa là 2MB." }, { status: 400 });
         }
 
-        // Determine file extension from mime
-        const extMap: Record<string, string> = {
-          "image/jpeg": "jpg",
-          "image/png": "png",
-          "image/webp": "webp",
-          "image/gif": "gif",
-        };
-        const ext = extMap[file.type] || "jpg";
-        const filename = `${userId}.${ext}`;
-
-        // Save avatar to disk (only works in local / self-hosted environments)
-        const buffer = Buffer.from(await file.arrayBuffer());
-
         try {
-          await mkdir(AVATAR_DIR, { recursive: true });
-          const filePath = path.join(AVATAR_DIR, filename);
-          await writeFile(filePath, buffer);
-          updateData.image = `/uploads/avatars/${filename}?t=${Date.now()}`;
-        } catch (fsErr) {
-          console.warn("[profile PATCH] File write failed (read-only filesystem):", fsErr);
+          // Delete old Vercel Blob avatar if exists
+          const currentUser = await db.user.findUnique({
+            where: { id: userId },
+            select: { image: true },
+          });
+          if (
+            currentUser?.image &&
+            currentUser.image.includes(".vercel-storage.com") &&
+            process.env.BLOB_READ_WRITE_TOKEN
+          ) {
+            await del(currentUser.image).catch(() => {});
+          }
+
+          const result = await uploadAvatar(file, userId);
+          updateData.image = result.url;
+        } catch (uploadErr) {
+          console.error("[profile PATCH] Avatar upload failed:", uploadErr);
           return NextResponse.json(
-            {
-              error:
-                "Không thể lưu ảnh đại diện trên môi trường này. Vui lòng sử dụng URL ảnh bên ngoài.",
-            },
-            { status: 400 },
+            { error: "Không thể tải ảnh đại diện lên. Vui lòng thử lại." },
+            { status: 500 },
           );
         }
       }

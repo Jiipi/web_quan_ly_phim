@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
       { protocol: "https", hostname: "static.tvmaze.com", pathname: "/**" },
       { protocol: "https", hostname: "*.tvmaze.com", pathname: "/**" },
+      { protocol: "https", hostname: "*.vercel-storage.com", pathname: "/**" },
     ],
   },
   // Tree-shake các thư viện nặng để giảm First Load JS.

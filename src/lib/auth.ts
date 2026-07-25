@@ -34,10 +34,10 @@ if (features.googleOAuth) {
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  // Cookie có giới hạn 4KB. Nếu ảnh là Base64 Data URL dài sẽ làm vỡ JWT cookie -> gây 500 ở /api/auth/session.
-  if (url.startsWith("data:") || url.length > 300) {
-    return null;
-  }
+  // Block Base64 Data URLs — they can be 50KB+ and will overflow the 4KB JWT cookie limit.
+  if (url.startsWith("data:")) return null;
+  // Normal URLs (Vercel Blob, TMDb, etc.) are fine — typically under 500 chars.
+  if (url.length > 500) return null;
   return url;
 }
 
