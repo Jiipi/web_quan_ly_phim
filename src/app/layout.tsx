@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "Quản lý watchlist, theo dõi tiến độ phim bộ, tóm tắt AI không spoil và phân tích gu xem phim cá nhân.",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon.ico" }],
+    icon: "/icon.svg",
     shortcut: "/icon.svg",
     apple: "/icon.svg",
   },
