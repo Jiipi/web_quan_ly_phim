@@ -5,7 +5,7 @@ const isDev = process.env.NODE_ENV !== "production";
 // Content Security Policy. Dev cần 'unsafe-eval' + ws cho HMR; production siết lại.
 const csp = [
   "default-src 'self'",
-  "img-src 'self' data: https://image.tmdb.org https://api.dicebear.com https://*.tvmaze.com",
+  "img-src 'self' data: https://image.tmdb.org https://api.dicebear.com https://*.tvmaze.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "static.tvmaze.com", pathname: "/**" },
       { protocol: "https", hostname: "*.tvmaze.com", pathname: "/**" },
       { protocol: "https", hostname: "*.vercel-storage.com", pathname: "/**" },
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/**" },
+      { protocol: "https", hostname: "*.blob.vercel-storage.com", pathname: "/**" },
     ],
   },
   // Tree-shake các thư viện nặng để giảm First Load JS.

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -31,10 +32,11 @@ export function UserAvatar({
   className,
   glow = false,
 }: UserAvatarProps) {
+  const [hasError, setHasError] = useState(false);
   const initial = (name || "U").charAt(0).toUpperCase();
   const sizeClass = SIZE_MAP[size];
 
-  if (src) {
+  if (src && !hasError) {
     return (
       <div
         className={cn(
@@ -51,6 +53,7 @@ export function UserAvatar({
           sizes="96px"
           className="object-cover"
           unoptimized
+          onError={() => setHasError(true)}
         />
       </div>
     );
