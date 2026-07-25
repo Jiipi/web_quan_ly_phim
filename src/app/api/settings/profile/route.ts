@@ -98,16 +98,24 @@ export async function PATCH(req: NextRequest) {
         const ext = extMap[file.type] || "jpg";
         const filename = `${userId}.${ext}`;
 
-        // Ensure directory exists
-        await mkdir(AVATAR_DIR, { recursive: true });
-
-        // Write file
+        // Try saving to disk first, fallback to Base64 Data URL if filesystem is read-only (Vercel/Serverless)
         const buffer = Buffer.from(await file.arrayBuffer());
-        const filePath = path.join(AVATAR_DIR, filename);
-        await writeFile(filePath, buffer);
+        let imageUrl: string;
 
-        // Store URL with cache-busting timestamp
-        updateData.image = `/uploads/avatars/${filename}?t=${Date.now()}`;
+        try {
+          await mkdir(AVATAR_DIR, { recursive: true });
+          const filePath = path.join(AVATAR_DIR, filename);
+          await writeFile(filePath, buffer);
+          imageUrl = `/uploads/avatars/${filename}?t=${Date.now()}`;
+        } catch (fsErr) {
+          console.warn(
+            "[profile PATCH] File write failed (read-only filesystem), falling back to Base64 Data URL:",
+            fsErr,
+          );
+          imageUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+        }
+
+        updateData.image = imageUrl;
       }
 
       // Process text fields
