@@ -88,7 +88,7 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
       className={cn(
-        "group relative overflow-hidden rounded-3xl border border-border/60",
+        "group relative overflow-hidden rounded-3xl border border-border/60 bg-black",
         "min-h-[420px] sm:min-h-[480px] shadow-2xl flex flex-col justify-end",
         className,
       )}

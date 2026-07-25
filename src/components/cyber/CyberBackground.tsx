@@ -74,17 +74,6 @@ export function CyberBackground({ className, subtle = false }: CyberBackgroundPr
           className,
         )}
       >
-        {/* Soft grid lines for structure */}
-        {!subtle && (
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.9) 1px, transparent 1px)`,
-              backgroundSize: "56px 56px",
-            }}
-          />
-        )}
-
         {/* Top-center ambient glow (using theme primary red) */}
         <div
           className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full blur-3xl opacity-[0.06]"
@@ -123,34 +112,6 @@ export function CyberBackground({ className, subtle = false }: CyberBackgroundPr
           style={{
             background:
               "radial-gradient(ellipse 100% 80% at 50% -10%, oklch(0.2 0.06 290) 0%, oklch(0.13 0.04 290) 60%)",
-          }}
-        />
-
-        {/* Animated grid */}
-        {!subtle && (
-          <div
-            className="absolute inset-0 opacity-[0.18]"
-            style={{
-              backgroundImage: `linear-gradient(oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px), linear-gradient(90deg, oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px)`,
-              backgroundSize: "56px 56px",
-              maskImage: "radial-gradient(ellipse 75% 60% at 50% 35%, black 0%, transparent 90%)",
-              WebkitMaskImage:
-                "radial-gradient(ellipse 75% 60% at 50% 35%, black 0%, transparent 90%)",
-            }}
-          />
-        )}
-
-        {/* Scrolling grid layer */}
-        <div
-          className="absolute inset-0 opacity-[0.12]"
-          style={{
-            backgroundImage: `linear-gradient(oklch(0.72 0.32 330 / 0.6) 1px, transparent 1px), linear-gradient(90deg, oklch(0.72 0.32 330 / 0.6) 1px, transparent 1px)`,
-            backgroundSize: "112px 112px",
-            animation: "cyberGridScroll 14s linear infinite",
-            maskImage:
-              "linear-gradient(180deg, transparent 0%, black 25%, black 80%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(180deg, transparent 0%, black 25%, black 80%, transparent 100%)",
           }}
         />
 
@@ -194,15 +155,6 @@ export function CyberBackground({ className, subtle = false }: CyberBackgroundPr
             background:
               "linear-gradient(90deg, transparent 0%, oklch(0.85 0.18 200 / 0.7) 30%, oklch(0.72 0.32 330 / 0.7) 50%, oklch(0.85 0.18 200 / 0.7) 70%, transparent 100%)",
             boxShadow: "0 0 18px oklch(0.72 0.32 330 / 0.5), 0 0 36px oklch(0.85 0.18 200 / 0.3)",
-          }}
-        />
-
-        {/* Scanlines */}
-        <div
-          className="absolute inset-0 opacity-[0.5] mix-blend-overlay"
-          style={{
-            background:
-              "repeating-linear-gradient(180deg, transparent 0px, transparent 2px, rgba(255,255,255,0.02) 3px, transparent 4px)",
           }}
         />
 

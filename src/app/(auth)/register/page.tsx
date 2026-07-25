@@ -198,14 +198,8 @@ export default function RegisterPage() {
         <div className="relative z-10 flex flex-col justify-between h-full w-full max-w-xl mx-auto grow gap-10">
           {/* Logo with breathing glow */}
           <div className="flex items-center gap-2.5 text-text">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-primary/50 neon-border logo-breathe">
-              <Image
-                src="/logo.png"
-                alt="CineOS Logo"
-                width={40}
-                height={40}
-                className="h-full w-full object-cover"
-              />
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary neon-border logo-breathe">
+              <Film className="text-primary-foreground" size={22} />
             </div>
             <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
               CINEOS
