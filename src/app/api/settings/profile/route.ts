@@ -24,24 +24,38 @@ async function uploadAvatar(
     "image/gif": "gif",
   };
   const ext = extMap[file.type] || "jpg";
-  const filename = `avatars/${userId}.${ext}`;
+  const filename = `avatars/${userId}-${Date.now()}.${ext}`;
 
-  // Try Vercel Blob first (works on Vercel production & preview)
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(filename, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
-    return { url: blob.url, storage: "blob" };
+  // Find any token available in process.env
+  const token = process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
+
+  if (token) {
+    try {
+      const blob = await put(filename, file, {
+        access: "public",
+        token,
+      });
+      return { url: blob.url, storage: "blob" };
+    } catch (blobErr) {
+      console.error("[Vercel Blob put error]:", blobErr);
+      throw new Error(`Lỗi tải ảnh Vercel Blob: ${String((blobErr as Error)?.message || blobErr)}`);
+    }
   }
 
   // Fallback to local disk (development)
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await mkdir(AVATAR_DIR, { recursive: true });
-  const localFilename = `${userId}.${ext}`;
-  const filePath = path.join(AVATAR_DIR, localFilename);
-  await writeFile(filePath, buffer);
-  return { url: `/uploads/avatars/${localFilename}?t=${Date.now()}`, storage: "local" };
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await mkdir(AVATAR_DIR, { recursive: true });
+    const localFilename = `${userId}.${ext}`;
+    const filePath = path.join(AVATAR_DIR, localFilename);
+    await writeFile(filePath, buffer);
+    return { url: `/uploads/avatars/${localFilename}?t=${Date.now()}`, storage: "local" };
+  } catch (fsErr) {
+    console.error("[Local FS write error]:", fsErr);
+    throw new Error(
+      "Vercel chưa nhận biến môi trường BLOB_READ_WRITE_TOKEN. Vui lòng vào Vercel Settings > Environment Variables > kết nối Store 'web-quan-ly-phim-blob' với Project.",
+    );
+  }
 }
 
 // GET /api/settings/profile — return current user profile
@@ -143,7 +157,7 @@ export async function PATCH(req: NextRequest) {
         } catch (uploadErr) {
           console.error("[profile PATCH] Avatar upload failed:", uploadErr);
           return NextResponse.json(
-            { error: "Không thể tải ảnh đại diện lên. Vui lòng thử lại." },
+            { error: (uploadErr as Error)?.message || "Không thể tải ảnh đại diện lên." },
             { status: 500 },
           );
         }
