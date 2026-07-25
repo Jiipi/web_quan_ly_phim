@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -125,14 +126,16 @@ export function AppHeader() {
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo & Main Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="group flex items-center gap-2">
-              <Film
-                className="logo-breathe text-primary transition-all group-hover:rotate-12 group-hover:scale-110"
-                size={22}
-                style={{
-                  filter: "drop-shadow(0 0 8px var(--neon-pink))",
-                }}
-              />
+            <Link href="/" className="group flex items-center gap-2.5">
+              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg border border-primary/40 shadow-[0_0_12px_var(--neon-pink)] transition-transform group-hover:scale-105">
+                <Image
+                  src="/logo.png"
+                  alt="CineOS Logo"
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
                 CINEOS
               </span>

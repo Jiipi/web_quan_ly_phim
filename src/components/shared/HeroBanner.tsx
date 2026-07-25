@@ -135,15 +135,6 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
         }}
       />
 
-      {/* Scanlines overlay (subtle CRT vibe) */}
-      <div
-        className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none"
-        style={{
-          background:
-            "repeating-linear-gradient(180deg, transparent 0px, transparent 2px, rgba(255,255,255,0.025) 3px, transparent 4px)",
-        }}
-      />
-
       {/* Corner HUD brackets */}
       <div
         className="absolute left-3 top-3 z-10 h-4 w-4 border-l-2 border-t-2 border-primary opacity-70"

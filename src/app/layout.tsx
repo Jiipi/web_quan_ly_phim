@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   title: "CineOS — Hệ điều hành xem phim cá nhân",
   description:
     "Quản lý watchlist, theo dõi tiến độ phim bộ, tóm tắt AI không spoil và phân tích gu xem phim cá nhân.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

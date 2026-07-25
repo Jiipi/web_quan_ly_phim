@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Film, Sparkles, Tv, ListPlus, Terminal } from "lucide-react";
 import { LoginForm } from "@/components/auth/LoginForm";
 
@@ -9,9 +10,21 @@ export const metadata: Metadata = {
 
 const HIGHLIGHTS = [
   { Icon: Film, title: "Library Manager", desc: "Lưu phim lẻ và phim bộ với tiến độ theo tập." },
-  { Icon: Tv, title: "Watch History", desc: "Nhật ký xem chi tiết, đếm streak, biểu đồ thói quen." },
-  { Icon: Sparkles, title: "AI No-Spoil", desc: "Tóm tắt đến tập bạn đang xem, gợi ý theo tâm trạng." },
-  { Icon: ListPlus, title: "Smart Watchlist", desc: "Gom phim muốn xem, đánh dấu ưu tiên và quản lý list riêng." },
+  {
+    Icon: Tv,
+    title: "Watch History",
+    desc: "Nhật ký xem chi tiết, đếm streak, biểu đồ thói quen.",
+  },
+  {
+    Icon: Sparkles,
+    title: "AI No-Spoil",
+    desc: "Tóm tắt đến tập bạn đang xem, gợi ý theo tâm trạng.",
+  },
+  {
+    Icon: ListPlus,
+    title: "Smart Watchlist",
+    desc: "Gom phim muốn xem, đánh dấu ưu tiên và quản lý list riêng.",
+  },
 ];
 
 export default function LoginPage() {
@@ -24,18 +37,23 @@ export default function LoginPage() {
           <div
             className="ambient-orb"
             style={{
-              width: 320, height: 320,
+              width: 320,
+              height: 320,
               background: "radial-gradient(circle, oklch(0.72 0.32 330 / 0.5) 0%, transparent 70%)",
-              top: "10%", left: "-5%",
+              top: "10%",
+              left: "-5%",
               animationDuration: "12s",
             }}
           />
           <div
             className="ambient-orb-b"
             style={{
-              width: 240, height: 240,
-              background: "radial-gradient(circle, oklch(0.85 0.18 200 / 0.45) 0%, transparent 70%)",
-              bottom: "15%", right: "5%",
+              width: 240,
+              height: 240,
+              background:
+                "radial-gradient(circle, oklch(0.85 0.18 200 / 0.45) 0%, transparent 70%)",
+              bottom: "15%",
+              right: "5%",
               animationDuration: "15s",
               animationDelay: "-4s",
             }}
@@ -43,9 +61,11 @@ export default function LoginPage() {
           <div
             className="ambient-orb"
             style={{
-              width: 180, height: 180,
+              width: 180,
+              height: 180,
               background: "radial-gradient(circle, oklch(0.7 0.32 290 / 0.4) 0%, transparent 70%)",
-              top: "50%", left: "30%",
+              top: "50%",
+              left: "30%",
               animationDuration: "18s",
               animationDelay: "-8s",
             }}
@@ -70,10 +90,8 @@ export default function LoginPage() {
             backgroundImage:
               "linear-gradient(oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px), linear-gradient(90deg, oklch(0.85 0.18 200 / 0.7) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
-            maskImage:
-              "linear-gradient(180deg, black 0%, transparent 70%)",
-            WebkitMaskImage:
-              "linear-gradient(180deg, black 0%, transparent 70%)",
+            maskImage: "linear-gradient(180deg, black 0%, transparent 70%)",
+            WebkitMaskImage: "linear-gradient(180deg, black 0%, transparent 70%)",
           }}
         />
 
@@ -92,21 +110,115 @@ export default function LoginPage() {
 
         {/* Floating particles */}
         <div aria-hidden="true" className="aside-particles">
-          <div className="aside-particle" style={{ width: 3, height: 3, background: "oklch(0.72 0.32 330 / 0.7)", left: "15%", bottom: "20%", animationDuration: "8s", animationDelay: "0s" }} />
-          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.85 0.18 200 / 0.6)", left: "40%", bottom: "10%", animationDuration: "10s", animationDelay: "-2s" }} />
-          <div className="aside-particle" style={{ width: 4, height: 4, background: "oklch(0.7 0.32 290 / 0.5)", left: "70%", bottom: "25%", animationDuration: "12s", animationDelay: "-4s" }} />
-          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.72 0.32 330 / 0.6)", left: "25%", bottom: "40%", animationDuration: "9s", animationDelay: "-6s" }} />
-          <div className="aside-particle" style={{ width: 3, height: 3, background: "oklch(0.85 0.18 200 / 0.7)", left: "85%", bottom: "15%", animationDuration: "11s", animationDelay: "-1s" }} />
-          <div className="aside-particle-alt" style={{ width: 2, height: 2, background: "oklch(0.72 0.32 330 / 0.5)", left: "55%", bottom: "35%", animationDuration: "7s", animationDelay: "-3s" }} />
-          <div className="aside-particle" style={{ width: 1, height: 1, background: "oklch(0.85 0.18 200 / 0.9)", left: "10%", bottom: "50%", animationDuration: "14s", animationDelay: "-5s" }} />
-          <div className="aside-particle-alt" style={{ width: 3, height: 3, background: "oklch(0.7 0.32 290 / 0.6)", left: "60%", bottom: "5%", animationDuration: "13s", animationDelay: "-7s" }} />
+          <div
+            className="aside-particle"
+            style={{
+              width: 3,
+              height: 3,
+              background: "oklch(0.72 0.32 330 / 0.7)",
+              left: "15%",
+              bottom: "20%",
+              animationDuration: "8s",
+              animationDelay: "0s",
+            }}
+          />
+          <div
+            className="aside-particle-alt"
+            style={{
+              width: 2,
+              height: 2,
+              background: "oklch(0.85 0.18 200 / 0.6)",
+              left: "40%",
+              bottom: "10%",
+              animationDuration: "10s",
+              animationDelay: "-2s",
+            }}
+          />
+          <div
+            className="aside-particle"
+            style={{
+              width: 4,
+              height: 4,
+              background: "oklch(0.7 0.32 290 / 0.5)",
+              left: "70%",
+              bottom: "25%",
+              animationDuration: "12s",
+              animationDelay: "-4s",
+            }}
+          />
+          <div
+            className="aside-particle-alt"
+            style={{
+              width: 2,
+              height: 2,
+              background: "oklch(0.72 0.32 330 / 0.6)",
+              left: "25%",
+              bottom: "40%",
+              animationDuration: "9s",
+              animationDelay: "-6s",
+            }}
+          />
+          <div
+            className="aside-particle"
+            style={{
+              width: 3,
+              height: 3,
+              background: "oklch(0.85 0.18 200 / 0.7)",
+              left: "85%",
+              bottom: "15%",
+              animationDuration: "11s",
+              animationDelay: "-1s",
+            }}
+          />
+          <div
+            className="aside-particle-alt"
+            style={{
+              width: 2,
+              height: 2,
+              background: "oklch(0.72 0.32 330 / 0.5)",
+              left: "55%",
+              bottom: "35%",
+              animationDuration: "7s",
+              animationDelay: "-3s",
+            }}
+          />
+          <div
+            className="aside-particle"
+            style={{
+              width: 1,
+              height: 1,
+              background: "oklch(0.85 0.18 200 / 0.9)",
+              left: "10%",
+              bottom: "50%",
+              animationDuration: "14s",
+              animationDelay: "-5s",
+            }}
+          />
+          <div
+            className="aside-particle-alt"
+            style={{
+              width: 3,
+              height: 3,
+              background: "oklch(0.7 0.32 290 / 0.6)",
+              left: "60%",
+              bottom: "5%",
+              animationDuration: "13s",
+              animationDelay: "-7s",
+            }}
+          />
         </div>
 
         <div className="relative z-10 flex flex-col justify-between h-full w-full max-w-xl mx-auto grow gap-10">
           {/* Logo with breathing glow */}
           <div className="flex items-center gap-2.5 text-text">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary neon-border logo-breathe">
-              <Film className="text-primary-foreground" size={22} />
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-primary/50 neon-border logo-breathe">
+              <Image
+                src="/logo.png"
+                alt="CineOS Logo"
+                width={40}
+                height={40}
+                className="h-full w-full object-cover"
+              />
             </div>
             <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-lg font-black tracking-tight text-transparent">
               CINEOS
@@ -129,8 +241,8 @@ export default function LoginPage() {
             </h1>
 
             <p className="max-w-xl text-sm leading-relaxed text-text-secondary">
-              Ghi chú tiến độ, đánh dấu ưu tiên, tóm tắt không spoil và khám phá
-              gu xem phim của chính mình — tất cả trong một dashboard cinematic.
+              Ghi chú tiến độ, đánh dấu ưu tiên, tóm tắt không spoil và khám phá gu xem phim của
+              chính mình — tất cả trong một dashboard cinematic.
             </p>
 
             {/* Animated divider */}
@@ -157,9 +269,7 @@ export default function LoginPage() {
                     </span>
                   </div>
                   <h3 className="text-xs font-bold">{title}</h3>
-                  <p className="text-[10px] leading-relaxed text-text-secondary">
-                    {desc}
-                  </p>
+                  <p className="text-[10px] leading-relaxed text-text-secondary">{desc}</p>
                 </div>
               ))}
             </div>
@@ -187,10 +297,22 @@ export default function LoginPage() {
         <div className="relative w-full max-w-md">
           {/* Corner HUD */}
           <div className="absolute -inset-4 cyber-panel-strong rounded-2xl opacity-90" />
-          <div className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-primary" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
-          <div className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
-          <div className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary" style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }} />
-          <div className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-primary" style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }} />
+          <div
+            className="absolute -left-3 -top-3 z-10 h-6 w-6 border-l-2 border-t-2 border-primary"
+            style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
+          />
+          <div
+            className="absolute -right-3 -top-3 z-10 h-6 w-6 border-r-2 border-t-2 border-secondary"
+            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
+          />
+          <div
+            className="absolute -bottom-3 -left-3 z-10 h-6 w-6 border-b-2 border-l-2 border-secondary"
+            style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.18 200 / 0.7))" }}
+          />
+          <div
+            className="absolute -bottom-3 -right-3 z-10 h-6 w-6 border-b-2 border-r-2 border-primary"
+            style={{ filter: "drop-shadow(0 0 4px oklch(0.72 0.32 330 / 0.7))" }}
+          />
 
           <div className="relative z-10 rounded-xl bg-bg/80 p-6 backdrop-blur-md sm:p-8">
             <div className="mb-6 flex items-center gap-2 md:hidden">
