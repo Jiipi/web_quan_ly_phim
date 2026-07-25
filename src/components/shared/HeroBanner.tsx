@@ -110,7 +110,7 @@ export function HeroBanner({ items, className, onPlay, onAdd }: HeroBannerProps)
                 alt={item.title}
                 fill
                 priority
-                sizes="100vw"
+                sizes="(max-width: 1280px) 100vw, 1280px"
                 className="object-cover"
               />
             </motion.div>
