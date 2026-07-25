@@ -32,6 +32,15 @@ if (features.googleOAuth) {
   );
 }
 
+function sanitizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  // Cookie có giới hạn 4KB. Nếu ảnh là Base64 Data URL dài sẽ làm vỡ JWT cookie -> gây 500 ở /api/auth/session.
+  if (url.startsWith("data:") || url.length > 300) {
+    return null;
+  }
+  return url;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(db),
@@ -39,27 +48,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user, trigger, session: updateSession }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role || "user";
-        token.image = user.image || null;
-        token.name = user.name || null;
-      }
-      if (trigger === "update" && updateSession) {
-        if (updateSession.image !== undefined) token.image = updateSession.image;
-        if (updateSession.name !== undefined) token.name = updateSession.name;
-      }
-      const userId = (token.id as string) || user?.id;
-      if (userId) {
-        const dbUser = await db.user.findUnique({
-          where: { id: userId },
-          select: { role: true, image: true, name: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.image = dbUser.image;
-          token.name = dbUser.name;
+      try {
+        if (user) {
+          token.id = user.id;
+          token.role = user.role || "user";
+          token.image = sanitizeImageUrl(user.image);
+          token.name = user.name || null;
         }
+        if (trigger === "update" && updateSession) {
+          if (updateSession.image !== undefined)
+            token.image = sanitizeImageUrl(updateSession.image);
+          if (updateSession.name !== undefined) token.name = updateSession.name;
+        }
+        const userId = (token.id as string) || user?.id;
+        if (userId) {
+          const dbUser = await db.user
+            .findUnique({
+              where: { id: userId },
+              select: { role: true, image: true, name: true },
+            })
+            .catch(() => null);
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.image = sanitizeImageUrl(dbUser.image);
+            token.name = dbUser.name;
+          }
+        }
+      } catch (err) {
+        console.error("[auth jwt] Exception in jwt callback:", err);
       }
       return token;
     },
