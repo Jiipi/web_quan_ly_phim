@@ -98,24 +98,24 @@ export async function PATCH(req: NextRequest) {
         const ext = extMap[file.type] || "jpg";
         const filename = `${userId}.${ext}`;
 
-        // Try saving to disk first, fallback to Base64 Data URL if filesystem is read-only (Vercel/Serverless)
+        // Save avatar to disk (only works in local / self-hosted environments)
         const buffer = Buffer.from(await file.arrayBuffer());
-        let imageUrl: string;
 
         try {
           await mkdir(AVATAR_DIR, { recursive: true });
           const filePath = path.join(AVATAR_DIR, filename);
           await writeFile(filePath, buffer);
-          imageUrl = `/uploads/avatars/${filename}?t=${Date.now()}`;
+          updateData.image = `/uploads/avatars/${filename}?t=${Date.now()}`;
         } catch (fsErr) {
-          console.warn(
-            "[profile PATCH] File write failed (read-only filesystem), falling back to Base64 Data URL:",
-            fsErr,
+          console.warn("[profile PATCH] File write failed (read-only filesystem):", fsErr);
+          return NextResponse.json(
+            {
+              error:
+                "Không thể lưu ảnh đại diện trên môi trường này. Vui lòng sử dụng URL ảnh bên ngoài.",
+            },
+            { status: 400 },
           );
-          imageUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
         }
-
-        updateData.image = imageUrl;
       }
 
       // Process text fields
