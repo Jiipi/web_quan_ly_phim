@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { authConfig } from "@/auth.config";
 import { isAdmin } from "@/types/role";
 
-// Next 16 đổi tên "middleware" -> "proxy". Instance Auth.js đọc session từ JWT (không đụng DB).
+// Middleware đọc session từ JWT (không đụng DB, tương thích Edge runtime).
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
@@ -44,7 +44,6 @@ export default auth((req) => {
   return NextResponse.next();
 });
 
-export const runtime = "experimental-edge";
 
 export const config = {
   matcher: [
