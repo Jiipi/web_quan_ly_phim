@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.blob.vercel-storage.com", pathname: "/**" },
     ],
   },
+  serverExternalPackages: ["pg", "pg-cloudflare"],
   // Tree-shake các thư viện nặng để giảm First Load JS.
   experimental: {
     optimizePackageImports: ["recharts", "lucide-react"],
