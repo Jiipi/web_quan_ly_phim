@@ -41,7 +41,14 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pg", "pg-cloudflare"],
   // Tree-shake các thư viện nặng để giảm First Load JS.
   experimental: {
-    optimizePackageImports: ["recharts", "lucide-react"],
+    optimizePackageImports: [
+      "recharts",
+      "lucide-react",
+      "date-fns",
+      "framer-motion",
+      "@ai-sdk/groq",
+      "@ai-sdk/openai",
+    ],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

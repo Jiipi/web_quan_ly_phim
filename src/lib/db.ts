@@ -6,15 +6,17 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const connectionString = process.env.DATABASE_URL || "postgresql://localhost:5432/mydb";
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+function createPrismaClient() {
+  const connectionString = process.env.DATABASE_URL || "postgresql://localhost:5432/mydb";
+  const pool = new pg.Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+  return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
+}
+
+export const db = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
