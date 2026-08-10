@@ -157,7 +157,7 @@ export const tmdb = {
     if (!activeKey) {
       const mockDb = [
         {
-          id: 114479,
+          id: 210733,
           title: "Vụng Trộm Không Thể Giấu",
           originalTitle: "Hidden Love",
           mediaType: "tv" as const,
@@ -168,7 +168,7 @@ export const tmdb = {
           rating: 8.7,
         },
         {
-          id: 34307,
+          id: 30983,
           title: "Thám Tử Lừng Danh Conan",
           originalTitle: "Detective Conan",
           mediaType: "tv" as const,
@@ -192,7 +192,7 @@ export const tmdb = {
           rating: 7.7,
         },
         {
-          id: 196454,
+          id: 134331,
           title: "Chiếc Bật Lửa Và Váy Công Chúa",
           originalTitle: "Lighter and Princess",
           mediaType: "tv" as const,
@@ -255,8 +255,8 @@ export const tmdb = {
     const activeKey = userApiKey || apiKey;
     if (!activeKey) {
       const mockDetails: Record<number, Record<string, unknown>> = {
-        114479: {
-          id: 114479,
+        210733: {
+          id: 210733,
           name: "Vụng Trộm Không Thể Giấu",
           original_name: "Hidden Love",
           tagline: "Mối tình ngọt ngào thầm kín của Tang Trĩ và Đoàn Gia Hứa",
@@ -274,8 +274,8 @@ export const tmdb = {
           },
           vote_average: 8.7,
         },
-        34307: {
-          id: 34307,
+        30983: {
+          id: 30983,
           name: "Thám Tử Lừng Danh Conan",
           original_name: "Detective Conan",
           tagline: "Sự thật chỉ có một!",
@@ -313,8 +313,8 @@ export const tmdb = {
           },
           vote_average: 7.7,
         },
-        196454: {
-          id: 196454,
+        134331: {
+          id: 134331,
           name: "Chiếc Bật Lửa Và Váy Công Chúa",
           original_name: "Lighter and Princess",
           tagline: "Một tình yêu rực rỡ vượt qua mọi thử thách",
@@ -333,7 +333,7 @@ export const tmdb = {
           vote_average: 8.6,
         },
       };
-      return mockDetails[id] || mockDetails[114479];
+      return mockDetails[id] || null;
     }
 
     const endpoint = `/${type}/${id}`;
@@ -452,10 +452,7 @@ export const tmdb = {
   /**
    * Get top-rated movies
    */
-  async getTopRated(
-    mediaType: "movie" | "tv",
-    userApiKey?: string,
-  ): Promise<TmdbSearchResult[]> {
+  async getTopRated(mediaType: "movie" | "tv", userApiKey?: string): Promise<TmdbSearchResult[]> {
     const data = await this.fetchFromTmdb(`/${mediaType}/top_rated`, { page: 1 }, userApiKey);
     if (!data.results) return [];
 

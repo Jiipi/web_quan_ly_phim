@@ -114,17 +114,39 @@ export async function getMediaDetail(
   userApiKey?: string,
 ): Promise<MediaDetail | null> {
   try {
-    const d = (await tmdb.getDetails(id, type, userApiKey)) as TmdbDetailRaw | null;
+    let actualType = type;
+    let d: TmdbDetailRaw | null = null;
+
+    try {
+      d = (await tmdb.getDetails(id, type, userApiKey)) as TmdbDetailRaw | null;
+    } catch {
+      // Ignore initial error, try fallback opposite type below
+    }
+
+    // Fallback nếu không tìm thấy với type hiện tại (ví dụ route truyền /movie/30983 nhưng ID thuộc /tv/30983)
+    if (!d || (!d.title && !d.name)) {
+      const altType = type === "movie" ? "tv" : "movie";
+      try {
+        const altData = (await tmdb.getDetails(id, altType, userApiKey)) as TmdbDetailRaw | null;
+        if (altData && (altData.title || altData.name)) {
+          d = altData;
+          actualType = altType;
+        }
+      } catch {
+        // Ignore fallback error
+      }
+    }
+
     if (!d) return null;
 
-    const isTv = type === "tv";
+    const isTv = actualType === "tv";
     const trailer = (d.videos?.results ?? []).find(
       (v) => v.type === "Trailer" && v.site === "YouTube",
     );
 
     return {
       tmdbId: id,
-      mediaType: type,
+      mediaType: actualType,
       title: (isTv ? d.name : d.title) ?? d.title ?? d.name ?? "Không rõ",
       originalTitle: (isTv ? d.original_name : d.original_title) ?? "",
       tagline: d.tagline ?? "",
