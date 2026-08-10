@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:worker": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -73,7 +72,6 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@opennextjs/cloudflare": "^1.20.2",
     "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "10.4.1",
@@ -98,8 +96,7 @@
     "tsx": "^4.23.0",
     "typescript": "^5",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.6",
-    "wrangler": "^4.120.0"
+    "vitest": "3.2.6"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,cjs,mjs}": [

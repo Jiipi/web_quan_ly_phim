@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { authConfig } from "@/auth.config";
 import { isAdmin } from "@/types/role";
 
-// Middleware đọc session từ JWT (không đụng DB, tương thích Edge runtime).
+// Proxy đọc session từ JWT (không đụng DB, tương thích Serverless/Edge runtime).
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const pathname = req.nextUrl.pathname;
 
   // 1. Chưa đăng nhập -> chuyển về /login kèm callbackUrl để quay lại sau.
@@ -44,6 +44,7 @@ export default auth((req) => {
   return NextResponse.next();
 });
 
+export default proxy;
 
 export const config = {
   matcher: [
